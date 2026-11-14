@@ -92,6 +92,14 @@ button{font:inherit;cursor:pointer}
 .filters button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font-weight:600;font-size:14px}
 .filters button[aria-pressed="true"]{background:var(--blue);color:#fff;border-color:var(--blue)}
 .prose{max-width:65ch}
+.intent{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--blue);border-radius:12px;padding:14px 16px;margin:12px 0 16px}
+.intent h3{font-size:21px;margin:0 0 6px}
+.intent h4{margin:10px 0 2px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.intent ul{margin:2px 0;padding-left:20px}
+.intent .cues{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.intent .cue{background:var(--blue-soft);border-radius:999px;padding:3px 10px;font-weight:700;font-size:14px}
+.philo-theme{margin-top:14px}
+.philo-theme summary{cursor:pointer;font-weight:700;font-size:18px;padding:6px 0}
 .prose h2{font-size:28px;margin:8px 0}
 .prose h3{font-size:21px;margin:18px 0 4px}
 .toast{font-size:14px;color:var(--muted)}
@@ -118,6 +126,7 @@ button{font:inherit;cursor:pointer}
     <nav class="tabs" aria-label="Sections">
       <a href="#seance" data-view="seance">Préparer une séance</a>
       <a href="#bibliotheque" data-view="bibliotheque">Bibliothèque d'exercices</a>
+      <a href="#philo" data-view="philo">Philosophie de jeu</a>
       <a href="#apropos" data-view="apropos">À propos</a>
     </nav>
   </div>
@@ -158,6 +167,10 @@ button{font:inherit;cursor:pointer}
   <section class="view" id="v-bibliotheque">
     <div class="filters" id="lib-filters" role="group" aria-label="Filtrer par thème"></div>
     <div id="lib"></div>
+  </section>
+
+  <section class="view" id="v-philo">
+    <div class="panel prose" id="philo"></div>
   </section>
 
   <section class="view" id="v-apropos">
@@ -866,6 +879,8 @@ function alternatives(it,items,theme,c){
 
 function sessionText(sessions,theme,c,T){
   let t=`${THEMES[theme]} - ${CATS[c]} - ${T} min\n`;
+  const P=PHILO[theme];
+  if(P){t+=`\nCe qu'on cherche : ${P.intention}\nObjectif ${CATS[c]} : ${P.age[ageOf(c)]}\nMots clés : ${P.cues.join(" / ")}\n`;}
   sessions.forEach((items,si)=>{
     if(sessions.length>1) t+=`\nSÉANCE ${si+1}\n`;
     let clock=0;
@@ -913,6 +928,7 @@ function render(){
     n1.innerHTML="<strong>Jeunes joueurs :</strong> utilise des petits buts (2,40 m x 1,70 m) et une zone à 4 ou 5 m. Fais jouer en effectif réduit, avec une relance immédiate du gardien après chaque but.";
     out.appendChild(n1);
   }
+  const ib=intentBox(theme,c); if(ib) out.appendChild(ib);
   sessions.forEach((items,si)=>{
     if(sessions.length>1){const h=document.createElement("h2");h.className="session-title";h.textContent=`Séance ${si+1}`+(si===0?" : découvrir":si===sessions.length-1?" : enchaîner et jouer":" : approfondir");out.appendChild(h);}
     const tl=document.createElement("div"); tl.className="timeline"; tl.setAttribute("aria-hidden","true");
@@ -942,13 +958,104 @@ function renderLib(){
   EX.filter(e=>e.theme===libTheme).sort((a,b)=>order[a.phase]-order[b.phase]||(a.ordre||0)-(b.ordre||0)).forEach(e=>lib.appendChild(exCard(e,e.duree)));
 }
 
+
+/* ---------- Philosophie de jeu ---------- */
+const AGES=[{nom:"École de hand (U9-U11)",cats:[0,1]},{nom:"Formation (U13-U15)",cats:[2,3]},{nom:"Jeunes adultes et seniors (U18-Seniors)",cats:[4,5]}];
+const ageOf=c=>c<=1?0:c<=3?1:2;
+const PHILO={
+ "attaque-15":{
+  intention:"Face à une 1-5, la ligne de base reste sur les 6 mètres et un seul défenseur monte. On cherche à exploiter l'espace laissé devant cette ligne et dans le dos de l'avancé.",
+  principes:["Prendre de la vitesse avant de recevoir le ballon pour attaquer la ligne en mouvement.","Fixer l'avancé pour libérer un partenaire dans son dos.","Écarter le jeu en largeur pour étirer la ligne de 5 et ouvrir les intervalles.","Oser le tir de loin : la 1-5 laisse souvent de la place aux arrières."],
+  cues:["Prends de la vitesse !","Fixe et passe","Joue dans le dos de l'avancé","Tire si c'est ouvert"],
+  age:["Pas de 1-5 adverse à cet âge : on joue surtout en un contre un et dans les intervalles.","Reconnaître l'avancé et jouer dans son dos. Lier la décision de tirer ou de passer à la position du défenseur.","Mettre en place des enchaînements préparés (croisés, écrans du pivot), et lire si la ligne de 5 sort ou recule."]},
+ "defense-15":{
+  intention:"La 1-5 est une défense d'équipe : l'avancé perturbe la circulation de balle, les cinq de base coulissent ensemble et sortent sur le porteur au bon moment.",
+  principes:["L'avancé gêne le demi-centre et coupe les passes faciles entre les arrières.","Les cinq de base coulissent ensemble du côté du ballon, sans laisser de trou.","Sortir sur le porteur puis rentrer aussitôt dans la ligne (sortir, rentrer).","Contrôler le pivot : toujours savoir qui s'en occupe.","Parler en permanence : annoncer les croisés et les changements de joueur."],
+  cues:["Ensemble !","Sors - rentre","Bras hauts","Parle !"],
+  age:["Trop tôt pour une 1-5 : on défend en avançant, souvent en individuelle, pour apprendre à récupérer le ballon.","On découvre la 1-5 après des défenses plus étagées : rôle de l'avancé, coulissement, sorties sur le porteur.","Adapter la 1-5 à l'adversaire : avancé plus ou moins haut, échanges de joueurs, dissuasion sur les tireurs."]},
+ "demarquage":{
+  intention:"Sans ballon, chaque joueur doit se rendre utile : se montrer, se faire voir et offrir une solution de passe sûre au porteur.",
+  principes:["Toujours se placer dans un espace libre, visible par le porteur.","Changer de rythme et de direction pour se décaler de son défenseur.","Appeler le ballon (voix, main tendue) au bon moment, pas trop tôt.","Recevoir en mouvement, orienté vers le but."],
+  cues:["Montre-toi !","Démarque-toi","Appelle le ballon","Reçois en avançant"],
+  age:["Courir vers les espaces vides et appeler le ballon. On joue beaucoup en petits nombres.","Se démarquer par des feintes de course et des changements de rythme, en lisant la position du défenseur.","Se démarquer au service d'un enchaînement collectif, en gardant les distances avec les partenaires."]},
+ "intervalle":{
+  intention:"L'intervalle, c'est l'espace entre deux défenseurs. L'attaquer, c'est obliger la défense à faire un choix, et c'est la base de tout le jeu d'attaque.",
+  principes:["Courir vers le but, entre deux défenseurs, plutôt qu'en largeur.","Attirer deux défenseurs pour libérer un partenaire.","Passer avant le contact, au moment où le défenseur s'engage.","Si personne ne vient, aller au bout et tirer."],
+  cues:["Vers le but !","Entre les deux","Attire et passe","Va au bout"],
+  age:["Jouer vers l'avant, entre deux adversaires, avec des règles simples.","Faire le bon choix entre tirer et passer selon la réaction du défenseur.","Enchaîner les attaques d'intervalle à grande vitesse pour créer le surnombre."]},
+ "contre-attaque":{
+  intention:"Dès que le ballon est récupéré, on attaque avant que la défense adverse soit en place. La vitesse et les couloirs de course font la différence.",
+  principes:["Dès la récupération, le gardien et les défenseurs relancent vite.","Courir dans les couloirs, en largeur, pour ne pas se gêner.","Prendre de la vitesse avant la balle et regarder le porteur en courant.","Finir en surnombre ; si l'occasion n'est pas là, enchaîner tout de suite avec la deuxième vague.","À la perte du ballon, repli immédiat : ceux qui contre-attaquent sont aussi les premiers à défendre."],
+  cues:["Pars !","Dans ton couloir","Regarde la balle","Repli !"],
+  age:["Courir et jouer vers l'avant dès qu'on a le ballon. C'est le cœur du jeu à cet âge.","Organiser la première vague (ailiers) et la deuxième vague (arrières), avec une relance rapide du gardien.","Enchaîner montée de balle et engagement rapide, gérer le repli et le surnombre."]},
+ "pivot":{
+  intention:"Le pivot vit au milieu de la défense : il crée des espaces pour les arrières et offre une solution de passe près du but.",
+  principes:["Le pivot se place entre deux défenseurs, toujours en mouvement.","Il fait écran ou bloque pour libérer un arrière.","La passe au pivot doit être sûre : à rebond, lobée ou dans la course.","Si la défense se resserre sur le pivot, les arrières tirent ; si elle sort, on passe au pivot."],
+  cues:["Bloque !","Entre deux","Passe sûre","Lis la défense"],
+  age:["Pas de poste fixe : tout le monde passe au pivot pour découvrir le jeu près de la zone.","Apprendre les écrans et la passe au pivot dans des situations simples, à deux ou trois.","Construire le jeu autour du pivot : écrans, rouleaux, combinaisons avec les arrières."]},
+ "gardien":{
+  intention:"Le gardien est le premier attaquant et le dernier défenseur. Il arrête des ballons, mais il dirige aussi sa défense et lance la contre-attaque.",
+  principes:["Se placer sur la ligne qui relie le ballon au milieu du but, pour réduire l'angle de tir.","Rester équilibré, sur les appuis, prêt à partir des deux côtés.","Lire le tireur : son bras, son appui, son regard.","Relancer vite après l'arrêt.","Parler à sa défense : annoncer le tireur et le pivot."],
+  cues:["Place-toi","Reste équilibré","Lis le bras","Relance !"],
+  age:["Tout le monde passe au but, avec des petits buts. On découvre le poste sans peur du ballon.","Travailler le placement, les appuis et les parades de base, en liant toujours l'arrêt à la relance.","Lire les tireurs adverses, travailler avec sa défense et analyser les tirs après les matchs."]},
+ "duel-def":{
+  intention:"Gagner le duel défensif, c'est empêcher l'attaquant d'aller où il veut, puis récupérer le ballon, sans faute grave.",
+  principes:["Rester bas sur les appuis, prêt à se déplacer vite.","Avancer vers l'attaquant pour le gêner avant qu'il prenne de la vitesse.","Orienter l'attaquant vers l'extérieur, là où il est moins dangereux.","Contact de face, avec le torse et les bras, en respectant les règles.","Garder un bras haut pour gêner le tir et la passe."],
+  cues:["Bas !","Avance","Oriente dehors","Bras haut"],
+  age:["Défendre en avançant pour toucher ou récupérer le ballon, sans contact dangereux.","Apprendre le contact réglementaire, l'orientation de l'attaquant et l'aide à son partenaire.","Gagner le duel tout en restant relié au collectif : dissuader, aider, revenir."]},
+ "jeux-jeunes":{
+  intention:"À l'école de hand, le jeu est le meilleur professeur : beaucoup de ballons, beaucoup de buts, et du plaisir pour donner envie de revenir.",
+  principes:["Jouer souvent et en petits nombres pour que chacun touche le ballon.","Des règles simples, qu'on adapte au fil du jeu.","Tout le monde passe à tous les postes, y compris gardien.","Valoriser l'effort et l'audace plus que le résultat."],
+  cues:["Bravo, ose !","Vers le but","À toi !","Encore !"],
+  age:["Jeux, motricité et plaisir avant tout.","(Thème pensé pour l'école de hand)","(Thème pensé pour l'école de hand)"]}
+};
+
+function intentBox(theme,c){
+  const P=PHILO[theme]; if(!P) return null;
+  const d=document.createElement("div"); d.className="intent";
+  d.innerHTML=`<h3>Ce qu'on cherche</h3><p>${P.intention}</p>
+    <h4>Principes de jeu</h4><ul>${P.principes.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <h4>Objectif pour les ${CATS[c]}</h4><p>${P.age[ageOf(c)]}</p>
+    <h4>Mots clés à dire aux joueurs</h4><div class="cues">${P.cues.map(x=>`<span class="cue">${x}</span>`).join("")}</div>`;
+  return d;
+}
+
+function renderPhilo(){
+  const box=$("#philo");
+  const themes=Object.keys(THEMES).map(k=>{const P=PHILO[k];return `<details class="philo-theme"><summary>${THEMES[k]}</summary>
+    <p>${P.intention}</p><ul>${P.principes.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <p><strong>Mots clés :</strong> ${P.cues.join(" · ")}</p>
+    ${k==="jeux-jeunes"?"":`<ul>${AGES.map((a,i)=>`<li><strong>${a.nom} :</strong> ${P.age[i]}</li>`).join("")}</ul>`}</details>`;}).join("");
+  box.innerHTML=`<h2>Philosophie de jeu</h2>
+  <p>Les exercices ne servent à rien sans une idée claire du jeu qu'on veut. Voici les grandes idées sur lesquelles reposent les séances du site.</p>
+  <h3>1. Le jeu d'abord</h3>
+  <p>On apprend le handball en jouant. Chaque séance finit par une situation de jeu, et les exercices techniques préparent ce moment. Un exercice doit toujours ressembler à un vrai moment de match : un but, des adversaires, des choix à faire.</p>
+  <h3>2. Attaquer, c'est avancer vers le but</h3>
+  <ul><li>Chercher d'abord le chemin le plus court vers le but.</li><li>Fixer un défenseur pour créer le surnombre ailleurs.</li><li>Jouer vite, mais faire le bon choix : tirer, passer ou garder le ballon.</li></ul>
+  <h3>3. Défendre, c'est récupérer le ballon</h3>
+  <ul><li>On défend pour reprendre le ballon, pas seulement pour empêcher le but.</li><li>On défend en avançant et ensemble, en parlant.</li><li>Chez les jeunes, on privilégie les défenses qui avancent, avant les systèmes alignés sur la zone.</li></ul>
+  <h3>4. Les transitions font gagner les matchs</h3>
+  <p>Le moment où le ballon change de camp est décisif. On relance vite après une récupération, et on se replie tout de suite après une perte de balle.</p>
+  <h3>5. Le gardien fait partie de l'équipe</h3>
+  <p>Il défend avec ses partenaires, les dirige et lance l'attaque. Il s'entraîne avec le groupe, pas à côté.</p>
+  <h3>6. La place de l'entraîneur</h3>
+  <ul><li>Une ou deux consignes à la fois, courtes et précises.</li><li>Poser des questions plutôt que tout expliquer : « Où était l'espace libre ? »</li><li>Faire jouer tout le monde et valoriser les progrès.</li><li>Adapter l'exercice s'il ne fonctionne pas : plus d'espace, moins de défenseurs, une règle en plus.</li></ul>
+  <h3>7. Une progression selon l'âge</h3>
+  <ul>${AGES.map((a,i)=>`<li><strong>${a.nom} :</strong> ${["jouer, bouger, toucher beaucoup de ballons, découvrir tous les postes et défendre en avançant.","apprendre à faire des choix, découvrir les rôles et les défenses étagées, puis les systèmes.","maîtriser les systèmes, s'adapter à l'adversaire et gagner en efficacité."][i]}</li>`).join("")}</ul>
+  <h3>Les thèmes un par un</h3>
+  <p>Touche un thème pour voir ses principes, les mots clés et les objectifs par âge.</p>
+  ${themes}
+  <p class="note">Ce texte présente des principes généraux de la formation en handball, rédigés pour ce site. Il doit être relu et complété par un entraîneur.</p>`;
+}
+
 /* ---------- Navigation ---------- */
 function route(){
   const h=(location.hash||"#seance").slice(1);
-  const v=["seance","bibliotheque","apropos"].includes(h)?h:"seance";
+  const v=["seance","bibliotheque","philo","apropos"].includes(h)?h:"seance";
   document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on",x.id==="v-"+v));
   document.querySelectorAll("nav.tabs a").forEach(a=>a.setAttribute("aria-current",a.dataset.view===v?"page":"false"));
   if(v==="bibliotheque"&&!$("#lib").children.length) renderLib();
+  if(v==="philo"&&!$("#philo").children.length) renderPhilo();
 }
 fill();
 loadSettings();
