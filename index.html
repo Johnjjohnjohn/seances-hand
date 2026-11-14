@@ -43,6 +43,7 @@ header.top h1{font-size:34px;letter-spacing:.5px}
 header.top p{margin:0;opacity:.85;font-size:15px}
 nav.tabs{display:flex;gap:4px;padding-bottom:0;overflow-x:auto}
 nav.tabs a{color:#fff;text-decoration:none;font-family:var(--display);font-size:19px;padding:8px 14px;border-radius:8px 8px 0 0;opacity:.8;white-space:nowrap}
+@media (max-width:600px){nav.tabs{flex-wrap:wrap;gap:2px}nav.tabs a{font-size:16px;padding:7px 10px}}
 nav.tabs a[aria-current="page"]{background:var(--bg);color:var(--ink);opacity:1}
 nav.tabs a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 main{padding:18px 0 48px}
@@ -103,6 +104,16 @@ button{font:inherit;cursor:pointer}
 .prose h2{font-size:28px;margin:8px 0}
 .prose h3{font-size:21px;margin:18px 0 4px}
 .toast{font-size:14px;color:var(--muted)}
+.note.tip{border-left-color:#2f9e44}
+.note a{color:var(--blue);font-weight:700}
+.tipcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;border-left:6px solid var(--tc,var(--blue))}
+.tipcard h3{font-size:23px;margin:4px 0 6px}
+.tipcard .idee{font-weight:600;margin:4px 0 8px}
+.tipcard p{margin:4px 0;max-width:70ch}
+.tipcard h4{margin:10px 0 2px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.tipcard ul{margin:2px 0;padding-left:20px}
+.tipcard .src{font-size:13px;color:var(--muted);margin-top:10px}
+
 .swap{margin-top:10px;background:transparent;color:var(--ink);border:1px dashed var(--line);border-radius:8px;padding:6px 12px;font-size:14px;cursor:pointer}
 .swap:hover{border-style:solid}
 .swap:disabled{opacity:.45;cursor:default}
@@ -127,6 +138,7 @@ button{font:inherit;cursor:pointer}
       <a href="#seance" data-view="seance">Préparer une séance</a>
       <a href="#bibliotheque" data-view="bibliotheque">Bibliothèque d'exercices</a>
       <a href="#philo" data-view="philo">Philosophie de jeu</a>
+      <a href="#conseils" data-view="conseils">Le coin de l'entraîneur</a>
       <a href="#apropos" data-view="apropos">À propos</a>
     </nav>
   </div>
@@ -171,6 +183,15 @@ button{font:inherit;cursor:pointer}
 
   <section class="view" id="v-philo">
     <div class="panel prose" id="philo"></div>
+  </section>
+
+  <section class="view" id="v-conseils">
+    <div class="prose" style="margin-bottom:14px">
+      <h2 style="font-size:28px">Le coin de l'entraîneur</h2>
+      <p style="margin:6px 0 0;color:var(--muted)">Des idées de fond sur la motivation, la formation des jeunes, les principes de jeu et la santé des joueurs. Chaque fiche se termine par du concret pour ta prochaine séance.</p>
+    </div>
+    <div class="filters" id="tip-filters" role="group" aria-label="Filtrer les fiches"></div>
+    <div id="tips"></div>
   </section>
 
   <section class="view" id="v-apropos">
@@ -929,6 +950,12 @@ function render(){
     out.appendChild(n1);
   }
   const ib=intentBox(theme,c); if(ib) out.appendChild(ib);
+  if(STATE._tipFor!==sessions){STATE.tip=pickTip(theme,c);STATE._tipFor=sessions;}
+  if(STATE.tip){
+    const n2=document.createElement("div"); n2.className="note tip";
+    n2.innerHTML=`<strong>Le conseil du coach : ${STATE.tip.titre}${/[?!]$/.test(STATE.tip.titre)?"":"."}</strong> ${STATE.tip.idee} <a href="#conseils">Lire la fiche</a>`;
+    out.appendChild(n2);
+  }
   sessions.forEach((items,si)=>{
     if(sessions.length>1){const h=document.createElement("h2");h.className="session-title";h.textContent=`Séance ${si+1}`+(si===0?" : découvrir":si===sessions.length-1?" : enchaîner et jouer":" : approfondir");out.appendChild(h);}
     const tl=document.createElement("div"); tl.className="timeline"; tl.setAttribute("aria-hidden","true");
@@ -1048,14 +1075,128 @@ function renderPhilo(){
   <p class="note">Ce texte présente des principes généraux de la formation en handball, rédigés pour ce site. Il doit être relu et complété par un entraîneur.</p>`;
 }
 
+/* ---------- Le coin de l'entraîneur ---------- */
+const TIPCATS = {
+  motivation:{nom:"Motivation et management",c:"#7048e8"},
+  jeunes:{nom:"Former les jeunes",c:"#2f9e44"},
+  jeu:{nom:"Principes de jeu",c:"#1f4e9c"},
+  sante:{nom:"Physique et santé",c:"#d9480f"}
+};
+const TIPS = [
+{id:"climat",cat:"motivation",titre:"Un climat qui fait progresser",themes:"all",min:0,max:5,
+ idee:"Valoriser les progrès, l'effort et l'entraide soude une équipe. La rivalité, la sanction des erreurs et la victoire à tout prix l'abîment.",
+ texte:["Une étude menée auprès de clubs de D1 féminine montre que l'attitude de l'entraîneur pèse sur la cohésion du groupe. Quand il met l'accent sur l'apprentissage et la coopération, le groupe fonctionne mieux, sur le terrain comme en dehors.","Mettre les joueurs en concurrence permanente pour les rendre plus efficaces ne semble pas marcher : cela affaiblit surtout la cohésion."],
+ pratique:["Souligne un progrès précis à chaque séance, même petit.","Félicite les actions collectives (une passe décisive, une aide défensive), pas seulement les buts.","Évite de comparer les joueurs entre eux devant le groupe.","Une erreur dans une prise de risque juste n'est pas une faute : dis-le."],
+ src:"D'après une étude sur la cohésion et le climat motivationnel en D1 féminine, Approches du Handball n°76"},
+{id:"abandon",cat:"motivation",titre:"Pourquoi les jeunes arrêtent, et comment les garder",themes:"all",min:0,max:4,
+ idee:"Les jeunes viennent pour des raisons différentes. Quand ils arrêtent, c'est souvent parce qu'ils s'ennuient ou ne progressent plus.",
+ texte:["Certains viennent pour les copains, d'autres pour gagner, d'autres pour progresser, d'autres encore pour le regard de l'entraîneur ou des parents. Bien connaître ces motivations permet d'adapter son discours à chacun.","Le sentiment de ne plus rien apprendre revient souvent chez ceux qui abandonnent. Un entraînement bien construit, adapté au niveau de chacun, est la meilleure façon de fidéliser."],
+ pratique:["En début de saison, demande à chacun ce qu'il aime et ce qui lui est difficile au hand.","Observe les attitudes : le joueur qui n'ose pas, celui qui se transcende devant ses parents.","Varie les exercices et garde toujours une part de jeu.","Dédramatise les matchs : le résultat n'est pas le seul objectif."],
+ src:"D'après Philippe Sarrazin, Approches du Handball n°39"},
+{id:"objectifs",cat:"motivation",titre:"Des objectifs personnels, chiffrés, à court terme",themes:"all",min:1,max:5,
+ idee:"« Fais de ton mieux » ne motive personne. « 3 passes décisives ce week-end » donne un cap clair.",
+ texte:["Les objectifs de maîtrise sont personnels, adaptés au poste et au niveau du joueur, mesurables et fixés pour le prochain match ou la prochaine semaine.","Ils ne marchent que si l'entraîneur fait un retour : objectif atteint ou non, et pourquoi. Impliquer le joueur dans le choix de son objectif le responsabilise."],
+ pratique:["Avant un match, donne à chaque joueur un objectif chiffré lié à son poste.","Fais le bilan en deux minutes à la séance suivante.","Laisse le joueur proposer son propre objectif, sous forme de petit contrat."],
+ src:"D'après Philippe Sarrazin, Approches du Handball n°39"},
+{id:"manager",cat:"motivation",titre:"Manager : se faire comprendre",themes:"all",min:2,max:5,
+ idee:"Ton équipe ne jouera jamais le handball dont tu rêves, mais celui que ses qualités lui permettent. Parle-lui avec des mots qu'elle comprend.",
+ texte:["Le manager est d'abord un communicant. Les mots qui ont un sens pour lui n'en ont pas forcément pour les joueurs. Il faut vérifier que le message est compris.","Méfie-toi de l'envie de faire jouer ton équipe comme toi tu as été formé, ou de copier une mode. Pars des caractéristiques réelles de ton groupe."],
+ pratique:["Après une consigne, demande à un joueur de la reformuler.","Liste les 3 points forts de ton équipe et construis ton jeu autour.","Pendant le match, reste juste : la frustration rend souvent injuste envers les joueurs."],
+ src:"D'après Pierre Alba, Approches du Handball n°51"},
+{id:"causerie",cat:"motivation",titre:"La causerie d'avant-match",themes:"all",min:2,max:5,
+ idee:"Un moment court, au calme, où une seule personne parle : l'entraîneur.",
+ texte:["La réunion d'avant-match sert à concentrer le groupe sur la rencontre. Si plusieurs adultes parlent, le message se brouille."],
+ pratique:["Choisis un endroit calme, 10 minutes suffisent.","Présente l'adversaire : 2 points forts, 2 points faibles.","Donne le plan de jeu et les difficultés probables.","Rappelle les points forts de ton équipe.","Annonce la composition et justifie-la en deux mots."],
+ src:"D'après Pierre Alba, Approches du Handball n°51"},
+{id:"soimeme",cat:"motivation",titre:"Rester soi-même et s'entourer",themes:"all",min:3,max:5,
+ idee:"Un entraîneur tendu transmet sa tension à l'équipe. Reste toi-même, tiens ton cap et appuie-toi sur ton staff.",
+ texte:["L'entraîneur doit être un repère stable. S'il joue un rôle qui n'est pas le sien, il perd en efficacité et le groupe le sent.","Personne ne peut tout faire seul : adjoint, kiné, dirigeant… chacun apporte sa compétence et les informations doivent circuler."],
+ pratique:["Prends 5 minutes avant le match pour faire retomber ta propre tension.","Fixe tes exigences, explique-les, puis tiens-les.","Fais un point régulier avec ton adjoint ou un parent référent."],
+ src:"D'après un entretien sur le travail mental, Approches du Handball n°65"},
+{id:"lire",cat:"jeunes",titre:"Aider les jeunes à lire le jeu",themes:"all",min:0,max:3,
+ idee:"Jouer ne suffit pas : l'entraîneur doit aider l'enfant à repérer les informations utiles.",
+ texte:["Le jeu est la base de la formation. Mais placer les enfants dans des matchs sans les aider à construire des repères les laisse noyés sous les informations.","Il faut leur apprendre à être sélectifs : regarder d'abord le but, puis le défenseur, puis le partenaire libre."],
+ pratique:["Donne un seul repère à la fois : « regarde le gardien avant de tirer ».","Arrête le jeu 20 secondes pour faire décrire une situation.","Pose des questions plutôt que de donner la réponse."],
+ src:"D'après Claude Onesta, Approches du Handball n°68"},
+{id:"passes",cat:"jeunes",titre:"Les passes à travailler tôt",themes:"all",min:1,max:3,
+ idee:"Passe de décalage, passe au pivot, passe sur croisé : des savoir-faire de haut niveau qu'on peut commencer à travailler dès 10-11 ans, en jouant.",
+ texte:["Le handball est un sport où l'on mûrit tard. Mais certains savoir-faire techniques gagnent à être appris tôt, de façon ludique, surtout chez les jeunes les plus motivés."],
+ pratique:["Glisse dans tes jeux une règle bonus : un but après une passe au pivot compte double.","Travaille la passe dans la course du partenaire, pas dans ses mains arrêtées.","Fais des concours de passes précises en mouvement."],
+ src:"D'après Olivier Krumbholz, Approches du Handball n°68"},
+{id:"minihand",cat:"jeunes",titre:"Le mini-hand : tous jouent, tous progressent",themes:"jeux-jeunes",min:0,max:1,
+ idee:"Petits terrains, petites équipes : chaque enfant touche plus souvent le ballon et progresse plus vite.",
+ texte:["Le mini-hand se joue avec des gestes naturels et procure du plaisir tout de suite. Il développe aussi la coopération, la décision et le sens des responsabilités.","Avec trois terrains en largeur sur un grand terrain, six équipes jouent en même temps."],
+ pratique:["Fais des équipes de niveau pour que chacun ait sa chance.","Fais tourner les rôles : arbitre, marqueur, chronométreur.","Applique les règles largement au début, puis de plus en plus précisément."],
+ src:"D'après un dossier sur le mini-handball, Approches du Handball n°34"},
+{id:"ados",cat:"jeunes",titre:"Les 13-15 ans : un âge à part",themes:"all",min:2,max:4,
+ idee:"Corps qui change, envie de liberté, besoin de se trouver : l'ado a besoin d'une offre adaptée, pas d'un copier-coller des seniors.",
+ texte:["À cet âge, la croissance perturbe les repères et la coordination. Les échecs peuvent décourager. L'ado aime se dépasser et gagner, mais rejette les contraintes trop lourdes.","Appliquer telles quelles les méthodes des seniors est une cause fréquente d'abandon."],
+ pratique:["Prévois des formats plus libres de temps en temps (tournois, 3 contre 3, beach).","Explique pourquoi tu demandes les choses, plutôt que d'imposer.","Rassure les joueurs gênés par leur croissance : c'est passager."],
+ src:"D'après Roger Flament, Approches du Handball n°51"},
+{id:"acteur",cat:"jeunes",titre:"Rendre le joueur acteur",themes:"all",min:1,max:5,
+ idee:"Un exercice trop dirigé fabrique des exécutants. Laisse le joueur chercher et découvrir la solution.",
+ texte:["Beaucoup d'entraîneurs pensent proposer des situations d'apprentissage, mais leurs consignes et leurs corrections les transforment en simple répétition.","Répéter reste nécessaire pour automatiser, mais répéter n'est pas recommencer à l'identique : on fait varier les contraintes."],
+ pratique:["Lance un exercice sans annoncer l'objectif, puis demande aux joueurs de le trouver.","Change une seule contrainte à la fois (espace, nombre, temps).","Laisse 2 minutes de recherche avant de corriger."],
+ src:"D'après des stagiaires de la formation de cadres, Approches du Handball n°87"},
+{id:"placelecture",cat:"jeu",titre:"Jeu placé ou jeu en lecture ?",themes:"attaque-15,pivot,demarquage",min:2,max:5,
+ idee:"Le jeu placé s'appuie sur des systèmes appris. Le jeu en lecture laisse chaque joueur entreprendre, dans le respect de principes communs.",
+ texte:["Le jeu placé prépare les placements selon la défense adverse (par exemple deux pivots contre une 1-5). Il demande un espace maximal et une circulation de balle ample et rapide.","Le jeu en lecture repose sur des principes partagés : largeur, regard vers le but, réception en course, réoccupation des postes libérés. Les deux se combinent : on peut commencer en lecture puis enchaîner sur un schéma."],
+ pratique:["Apprends 2 ou 3 systèmes simples, pas dix.","Travaille aussi les principes généraux en jeu libre.","En match, laisse une part d'initiative avant d'appeler une combinaison."],
+ src:"D'après Daniel Costantini, Approches du Handball n°87"},
+{id:"vitesse",cat:"jeu",titre:"Le handball moderne va vite",themes:"contre-attaque,defense-15",min:3,max:5,
+ idee:"Au plus haut niveau, une équipe peut avoir plus de 60 possessions par match : les attaques placées sont courtes et les transitions décisives.",
+ texte:["Les observations des grandes compétitions montrent beaucoup de possessions et des attaques de moins de 30 secondes. Les équipes qui défendent haut récupèrent plus de ballons et les exploitent en jeu rapide."],
+ pratique:["Intègre la transition (attaque-défense et défense-attaque) dans presque chaque séance.","Compte les ballons récupérés et ce que ton équipe en fait.","Entraîne l'engagement rapide après un but encaissé."],
+ src:"D'après Olivier De La Fuente et Pierre Mangin, Approches du Handball n°79"},
+{id:"echauffement",cat:"sante",titre:"L'échauffement prépare aussi la tête",themes:"all",min:1,max:5,
+ idee:"S'échauffer, c'est passer du repos à l'état prêt pour le thème du jour, physiquement et mentalement.",
+ texte:["L'échauffement fait monter le cœur, la respiration et la température des muscles. Il améliore la coordination et protège des blessures.","Il doit aussi mettre les joueurs dans le thème de la séance : on ne s'échauffe pas pareil pour un travail de vitesse ou de défense."],
+ pratique:["Construis ton échauffement après avoir choisi le thème de la séance.","Finis-le par un geste proche de l'exercice principal.","Ajoute un temps de concentration : consigne, objectif du jour."],
+ src:"D'après Thierry Anti, Approches du Handball n°96"},
+{id:"blessures",cat:"sante",titre:"Prévenir les blessures en 15 minutes",themes:"all",min:2,max:5,
+ idee:"Le handball fait partie des sports les plus traumatisants. 10 à 15 minutes de renforcement et d'équilibre réduisent nettement le risque.",
+ texte:["Les zones les plus touchées sont l'épaule, la cheville, le genou et le dos. Un travail régulier de renforcement musculaire et de proprioception (équilibre) les protège.","Ces routines se font avec un simple ballon. Elles sont à faire presque à chaque séance pendant les reprises d'août et de janvier."],
+ pratique:["Épaules : rotations avec élastique, gainage en appui sur un ballon.","Chevilles et genoux : équilibre sur une jambe, réceptions de sauts amorties.","Au moins une fois par semaine pour les loisirs, plus souvent pour les compétiteurs."],
+ src:"D'après un programme de prévention des blessures, Approches du Handball n°106"},
+{id:"planifier",cat:"sante",titre:"Planifier et varier la charge",themes:"all",min:3,max:5,
+ idee:"La même charge de travail toutes les semaines mène au surentraînement. Alterne les semaines dures et les semaines plus légères.",
+ texte:["Entraîner, c'est anticiper. La préparation physique se planifie en fonction du calendrier : des périodes avec un thème physique principal, des semaines de charge et des semaines de récupération.","La question à se poser en permanence : ce que je travaille physiquement se retrouve-t-il dans le jeu ?"],
+ pratique:["Repère les matchs importants de la saison et organise ta charge autour.","Après 2 ou 3 semaines intenses, prévois une semaine plus légère.","Préfère les exercices physiques avec ballon, proches du jeu."],
+ src:"D'après Approches du Handball n°77"}
+];
+function pickTip(theme,c){
+  const ok=TIPS.filter(t=>c>=t.min&&c<=t.max&&(t.themes==="all"||t.themes.split(",").includes(theme)));
+  if(!ok.length) return null;
+  const spec=ok.filter(t=>t.themes!=="all");
+  const pool=spec.length&&Math.random()<0.5?spec:ok;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+let tipCat="all";
+function renderTips(){
+  const f=$("#tip-filters");
+  f.innerHTML=[["all","Toutes les fiches"]].concat(Object.entries(TIPCATS).map(([k,v])=>[k,v.nom])).map(([k,v])=>`<button type="button" data-k="${k}" aria-pressed="${k===tipCat}">${v}</button>`).join("");
+  f.querySelectorAll("button").forEach(b=>b.onclick=()=>{tipCat=b.dataset.k;renderTips();});
+  const box=$("#tips"); box.innerHTML="";
+  TIPS.filter(t=>tipCat==="all"||t.cat===tipCat).forEach(t=>{
+    const cat=TIPCATS[t.cat]; const a=document.createElement("article"); a.className="tipcard"; a.id="fiche-"+t.id;
+    a.style.setProperty("--tc",cat.c);
+    a.innerHTML=`<div class="chips"><span class="chip phase" style="background:${cat.c}">${cat.nom}</span><span class="chip">${CATS[t.min]}${t.max>t.min?" à "+CATS[t.max]:""}</span></div>
+      <h3>${t.titre}</h3><p class="idee">${t.idee}</p>${t.texte.map(p=>`<p>${p}</p>`).join("")}
+      <h4>En pratique</h4><ul>${t.pratique.map(p=>`<li>${p}</li>`).join("")}</ul>
+      <p class="src">${t.src}. Texte réécrit pour Séances Hand.</p>`;
+    box.appendChild(a);
+  });
+}
+
 /* ---------- Navigation ---------- */
 function route(){
   const h=(location.hash||"#seance").slice(1);
-  const v=["seance","bibliotheque","philo","apropos"].includes(h)?h:"seance";
+  const v=["seance","bibliotheque","philo","conseils","apropos"].includes(h)?h:"seance";
   document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on",x.id==="v-"+v));
   document.querySelectorAll("nav.tabs a").forEach(a=>a.setAttribute("aria-current",a.dataset.view===v?"page":"false"));
   if(v==="bibliotheque"&&!$("#lib").children.length) renderLib();
   if(v==="philo"&&!$("#philo").children.length) renderPhilo();
+  if(v==="conseils"&&!$("#tips").children.length) renderTips();
 }
 fill();
 loadSettings();

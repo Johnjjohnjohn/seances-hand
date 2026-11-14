@@ -14,6 +14,10 @@ Site gratuit pour les entraîneurs de handball : on choisit un thème, une caté
 - Gagner le duel défensif
 - Jeux d'initiation (école de hand)
 
+## Le coin de l'entraîneur
+
+Des fiches courtes sur la motivation, le management, la formation des jeunes, les principes de jeu et la santé des joueurs. Chaque séance générée affiche aussi un conseil du coach.
+
 ## Utilisation
 
 Le site tient dans un seul fichier, `index.html`. Il suffit de l'ouvrir dans un navigateur, ou de le publier avec GitHub Pages.
