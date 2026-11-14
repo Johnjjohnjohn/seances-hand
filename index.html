@@ -95,6 +95,16 @@ button{font:inherit;cursor:pointer}
 .prose h2{font-size:28px;margin:8px 0}
 .prose h3{font-size:21px;margin:18px 0 4px}
 .toast{font-size:14px;color:var(--muted)}
+.swap{margin-top:10px;background:transparent;color:var(--ink);border:1px dashed var(--line);border-radius:8px;padding:6px 12px;font-size:14px;cursor:pointer}
+.swap:hover{border-style:solid}
+.swap:disabled{opacity:.45;cursor:default}
+@media print{
+  header.top,#f,.summary .row,.swap,.board button,.board .ctrl{display:none!important}
+  body{background:#fff;color:#000}
+  .ex{break-inside:avoid;border-color:#999}
+  .session-title{break-before:page}
+  .session-title:first-of-type{break-before:auto}
+}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -797,30 +807,61 @@ function adaptFor(ex,nbj){
   return `Avec ${nbj} joueurs : réduis le nombre de groupes et fais tourner plus vite.`;
 }
 
-function buildSessions(theme,c,T,nbj,n){
+/* Tirage au hasard : garde l'ordre de progression mais varie les exercices */
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const byOrdre=(a,b)=>(a.ordre||0)-(b.ordre||0);
+function pickBody(body,k,s,n,random){
+  if(!random){const start=n===1?0:Math.round(s*(body.length-k)/(n-1));return body.slice(start,start+k);}
+  if(n>1){ // cycle : chaque séance dans sa tranche de progression, avec un peu de hasard
+    const size=Math.max(k,Math.ceil(body.length/n)+1);
+    const start=Math.min(body.length-k,Math.max(0,Math.round(s*(body.length-size)/Math.max(1,n-1))));
+    return shuffle(body.slice(start,start+size)).slice(0,k).sort(byOrdre);
+  }
+  // une séance : au moins un exercice technique si possible, puis des situations
+  const tech=shuffle(body.filter(e=>e.phase==="tech")), sit=shuffle(body.filter(e=>e.phase==="situation"));
+  const out=[]; if(tech.length) out.push(tech.shift());
+  const restAll=shuffle(sit.concat(tech));
+  if(sit.length&&!out.some(e=>e.phase==="situation")) out.push(restAll.splice(restAll.findIndex(e=>e.phase==="situation"),1)[0]);
+  while(out.length<k&&restAll.length) out.push(restAll.shift());
+  return out.sort(byOrdre);
+}
+
+function buildSessions(theme,c,T,nbj,n,random){
   const pool=EX.filter(e=>e.theme===theme&&okCat(e,c));
-  const body=pool.filter(e=>e.phase==="tech"||e.phase==="situation").sort((a,b)=>a.ordre-b.ordre);
-  let jeu=pool.find(e=>e.phase==="jeu");
-  if(!jeu||c<=1) jeu=EX.find(e=>e.id==="j-jeunes"&&okCat(e,c))||jeu;
+  const body=pool.filter(e=>e.phase==="tech"||e.phase==="situation").sort(byOrdre);
+  const jeux=pool.filter(e=>e.phase==="jeu");
+  const jeunes=EX.find(e=>e.id==="j-jeunes"&&okCat(e,c));
   const warms=EX.filter(e=>e.theme==="all"&&e.phase==="echauffement"&&okCat(e,c));
   const calms=EX.filter(e=>e.theme==="all"&&e.phase==="calme");
   if(!body.length) return null;
-  const k=Math.min(3,body.length);
+  const k=Math.min(T>=90?3:2,body.length) || 1;
+  const off=random?Math.floor(Math.random()*12):0;
   const out=[];
   for(let s=0;s<n;s++){
-    const start = n===1?0:Math.round(s*(body.length-k)/(n-1));
-    const chosen=body.slice(start,start+k);
+    const chosen=pickBody(body,k,s,n,random);
+    let jeu=jeux.length?jeux[(s+off)%jeux.length]:null;
+    if(!jeu||c<=1) jeu=jeunes||jeu;
     const calmT = T>=75?10:5;
     const warmT = r5(T*0.2), jeuT = r5(T*0.22);
     let rest=T-calmT-warmT-jeuT; const each=[];
     for(let i=0;i<chosen.length;i++){const v=i===chosen.length-1?rest:r5(rest/(chosen.length-i)); each.push(v); rest-=v;}
-    const items=[{ex:warms[s%warms.length],min:warmT}];
+    const items=[{ex:warms[(s+off)%warms.length],min:warmT}];
     chosen.forEach((e,i)=>items.push({ex:e,min:each[i]}));
     if(jeu) items.push({ex:jeu,min:jeuT});
-    items.push({ex:calms[s%calms.length],min:calmT});
+    items.push({ex:calms[(s+off)%calms.length],min:calmT});
     out.push(items);
   }
   return out;
+}
+
+/* Autres exercices possibles pour remplacer celui-ci */
+function alternatives(it,items,theme,c){
+  const used=new Set(items.map(x=>x.ex.id));
+  const body=p=>p==="tech"||p==="situation";
+  return EX.filter(e=>!used.has(e.id)&&okCat(e,c)&&(
+    it.ex.theme==="all" ? (e.theme==="all"&&e.phase===it.ex.phase)
+    : body(it.ex.phase) ? (e.theme===theme&&body(e.phase))
+    : (e.theme===theme&&e.phase===it.ex.phase)));
 }
 
 function sessionText(sessions,theme,c,T){
@@ -837,10 +878,21 @@ function sessionText(sessions,theme,c,T){
   return t;
 }
 
-function generate(){
+const SAVE_KEY="seances-hand-reglages";
+function saveSettings(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({theme:$("#theme").value,cat:$("#cat").value,duree:$("#duree").value,nbj:$("#nbj").value,nbs:$("#nbs").value}));}catch(e){}}
+function loadSettings(){try{const v=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");if(!v)return;for(const k of ["cat","theme","duree","nbj","nbs"]){const el=$("#"+k);if(v[k]!=null&&[...el.options].some(o=>o.value===String(v[k])))el.value=v[k];}}catch(e){}}
+
+let STATE=null; // séance affichée
+function generate(random){
   const theme=$("#theme").value, c=+$("#cat").value, T=+$("#duree").value, nbj=+$("#nbj").value, n=+$("#nbs").value;
+  saveSettings();
+  STATE={theme,c,T,nbj,n,sessions:buildSessions(theme,c,T,nbj,n,random)};
+  render();
+}
+
+function render(){
+  const {theme,c,T,nbj,n,sessions}=STATE;
   const out=$("#out"); out.innerHTML="";
-  const sessions=buildSessions(theme,c,T,nbj,n);
   if(!sessions){
     out.innerHTML=`<div class="note warn">Ce thème n'est pas encore prévu pour les ${CATS[c]}. Essaie « ${c<=2?THEMES.intervalle:THEMES["attaque-15"]} ».</div>`;
     return;
@@ -848,10 +900,14 @@ function generate(){
   const sum=document.createElement("div"); sum.className="summary";
   sum.innerHTML=`<div><h2>${THEMES[theme]}</h2><div class="meta">${CATS[c]} · ${T} min · ${nbj} joueurs · ${n>1?n+" séances":"1 séance"}</div></div>`;
   const right=document.createElement("div"); right.className="row";
+  const again=document.createElement("button"); again.className="btn"; again.type="button"; again.textContent="🎲 Autre proposition";
+  again.onclick=()=>generate(true);
   const copy=document.createElement("button"); copy.className="btn ghost"; copy.type="button"; copy.textContent="Copier la séance";
+  const print=document.createElement("button"); print.className="btn ghost"; print.type="button"; print.textContent="Imprimer / PDF";
+  print.onclick=()=>window.print();
   const toast=document.createElement("span"); toast.className="toast"; toast.setAttribute("aria-live","polite");
   copy.onclick=async()=>{try{await navigator.clipboard.writeText(sessionText(sessions,theme,c,T));toast.textContent="Copiée !";}catch(e){toast.textContent="Copie impossible ici.";}};
-  right.append(copy,toast); sum.appendChild(right); out.appendChild(sum);
+  right.append(again,copy,print,toast); sum.appendChild(right); out.appendChild(sum);
   if(c<=1){
     const n1=document.createElement("div"); n1.className="note";
     n1.innerHTML="<strong>Jeunes joueurs :</strong> utilise des petits buts (2,40 m x 1,70 m) et une zone à 4 ou 5 m. Fais jouer en effectif réduit, avec une relance immédiate du gardien après chaque but.";
@@ -862,7 +918,16 @@ function generate(){
     const tl=document.createElement("div"); tl.className="timeline"; tl.setAttribute("aria-hidden","true");
     items.forEach(it=>{const sp=document.createElement("span");sp.style.width=(it.min/T*100)+"%";sp.style.background=PHASES[it.ex.phase].c;sp.title=it.ex.titre;tl.appendChild(sp);});
     out.appendChild(tl);
-    items.forEach(it=>out.appendChild(exCard(it.ex,it.min,adaptFor(it.ex,nbj))));
+    items.forEach((it,ii)=>{
+      const card=exCard(it.ex,it.min,adaptFor(it.ex,nbj));
+      const alts=alternatives(it,items,theme,c);
+      const b=document.createElement("button"); b.type="button"; b.className="swap";
+      b.textContent=alts.length?`↻ Changer cet exercice (${alts.length} autre${alts.length>1?"s":""})`:"Pas d'autre exercice pour l'instant";
+      b.disabled=!alts.length;
+      b.onclick=()=>{items[ii]={ex:alts[Math.floor(Math.random()*alts.length)],min:it.min};const y=window.scrollY;render();window.scrollTo(0,y);};
+      card.firstChild.appendChild(b);
+      out.appendChild(card);
+    });
   });
 }
 
@@ -886,6 +951,7 @@ function route(){
   if(v==="bibliotheque"&&!$("#lib").children.length) renderLib();
 }
 fill();
+loadSettings();
 function refreshThemes(){
   const c=+$("#cat").value; const sel=$("#theme");
   [...sel.options].forEach(o=>{
@@ -896,9 +962,9 @@ function refreshThemes(){
 }
 $("#cat").addEventListener("change",refreshThemes);
 refreshThemes();
-$("#go").onclick=generate;
+$("#go").onclick=()=>generate(true);
 window.addEventListener("hashchange",route);
-route(); generate();
+route(); generate(false);
 </script>
 </body>
 </html>
