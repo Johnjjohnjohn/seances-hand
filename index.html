@@ -114,6 +114,16 @@ button{font:inherit;cursor:pointer}
 .tipcard ul{margin:2px 0;padding-left:20px}
 .tipcard .src{font-size:13px;color:var(--muted);margin-top:10px}
 
+.lang{margin-left:auto;flex-direction:row;align-items:center;color:#fff}
+.lang select{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.35);padding:6px 8px}
+.lang select option{color:#15203a;background:#fff}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+[dir="rtl"] .ex{border-left:1px solid var(--line);border-right:6px solid var(--phase,var(--blue))}
+[dir="rtl"] .note{border-left:0;border-right:4px solid var(--blue)}
+[dir="rtl"] .intent,[dir="rtl"] .tipcard{border-left:1px solid var(--line);border-right:6px solid var(--blue)}
+[dir="rtl"] .ex ul,[dir="rtl"] .intent ul,[dir="rtl"] .tipcard ul{padding-left:0;padding-right:20px}
+[dir="rtl"] .lang{margin-left:0;margin-right:auto}
+[dir="rtl"] .board svg,[dir="rtl"] .ctrl{direction:ltr}
 .swap{margin-top:10px;background:transparent;color:var(--ink);border:1px dashed var(--line);border-radius:8px;padding:6px 12px;font-size:14px;cursor:pointer}
 .swap:hover{border-style:solid}
 .swap:disabled{opacity:.45;cursor:default}
@@ -131,15 +141,16 @@ button{font:inherit;cursor:pointer}
 <header class="top">
   <div class="wrap">
     <h1>Séances Hand</h1>
-    <p>Prépare ta séance d'entraînement en 30 secondes, avec les planches tactiques</p>
+    <p data-i="subtitle">Prépare ta séance d'entraînement en 30 secondes, avec les planches tactiques</p>
+    <label class="lang" for="lang"><span class="sr" data-i="langLabel">Langue</span><select id="lang" aria-label="Langue"></select></label>
   </div>
   <div class="wrap">
-    <nav class="tabs" aria-label="Sections">
-      <a href="#seance" data-view="seance">Préparer une séance</a>
-      <a href="#bibliotheque" data-view="bibliotheque">Bibliothèque d'exercices</a>
-      <a href="#philo" data-view="philo">Philosophie de jeu</a>
-      <a href="#conseils" data-view="conseils">Le coin de l'entraîneur</a>
-      <a href="#apropos" data-view="apropos">À propos</a>
+    <nav class="tabs" aria-label="Sections" data-ia="navAria">
+      <a href="#seance" data-view="seance" data-i="navSeance">Préparer une séance</a>
+      <a href="#bibliotheque" data-view="bibliotheque" data-i="navLib">Bibliothèque d'exercices</a>
+      <a href="#philo" data-view="philo" data-i="navPhilo">Philosophie de jeu</a>
+      <a href="#conseils" data-view="conseils" data-i="navTips">Le coin de l'entraîneur</a>
+      <a href="#apropos" data-view="apropos" data-i="navAbout">À propos</a>
     </nav>
   </div>
 </header>
@@ -147,13 +158,13 @@ button{font:inherit;cursor:pointer}
 <main class="wrap">
   <section class="view" id="v-seance">
     <form class="panel form" id="f" onsubmit="return false">
-      <label for="theme">Thème
+      <label for="theme"><span data-i="lblTheme">Thème</span>
         <select id="theme"></select>
       </label>
-      <label for="cat">Catégorie
+      <label for="cat"><span data-i="lblCat">Catégorie</span>
         <select id="cat"></select>
       </label>
-      <label for="duree">Durée
+      <label for="duree"><span data-i="lblDuree">Durée</span>
         <select id="duree">
           <option value="60">60 min</option>
           <option value="75">75 min</option>
@@ -161,23 +172,23 @@ button{font:inherit;cursor:pointer}
           <option value="105">105 min</option>
         </select>
       </label>
-      <label for="nbj">Joueurs présents
+      <label for="nbj"><span data-i="lblNbj">Joueurs présents</span>
         <select id="nbj"></select>
       </label>
-      <label for="nbs">Nombre de séances
+      <label for="nbs"><span data-i="lblNbs">Nombre de séances</span>
         <select id="nbs">
-          <option value="1">1 séance</option>
-          <option value="2">Cycle de 2 séances</option>
-          <option value="3">Cycle de 3 séances</option>
+          <option value="1" data-i="optS1">1 séance</option>
+          <option value="2" data-i="optS2">Cycle de 2 séances</option>
+          <option value="3" data-i="optS3">Cycle de 3 séances</option>
         </select>
       </label>
-      <button class="btn" id="go" type="button">Générer la séance</button>
+      <button class="btn" id="go" type="button" data-i="btnGo">Générer la séance</button>
     </form>
     <div id="out"></div>
   </section>
 
   <section class="view" id="v-bibliotheque">
-    <div class="filters" id="lib-filters" role="group" aria-label="Filtrer par thème"></div>
+    <div class="filters" id="lib-filters" role="group" aria-label="Filtrer par thème" data-ia="filterThemeAria"></div>
     <div id="lib"></div>
   </section>
 
@@ -187,15 +198,15 @@ button{font:inherit;cursor:pointer}
 
   <section class="view" id="v-conseils">
     <div class="prose" style="margin-bottom:14px">
-      <h2 style="font-size:28px">Le coin de l'entraîneur</h2>
-      <p style="margin:6px 0 0;color:var(--muted)">Des idées de fond sur la motivation, la formation des jeunes, les principes de jeu et la santé des joueurs. Chaque fiche se termine par du concret pour ta prochaine séance.</p>
+      <h2 style="font-size:28px" data-i="tipsTitle">Le coin de l'entraîneur</h2>
+      <p style="margin:6px 0 0;color:var(--muted)" data-i="tipsIntro">Des idées de fond sur la motivation, la formation des jeunes, les principes de jeu et la santé des joueurs. Chaque fiche se termine par du concret pour ta prochaine séance.</p>
     </div>
-    <div class="filters" id="tip-filters" role="group" aria-label="Filtrer les fiches"></div>
+    <div class="filters" id="tip-filters" role="group" aria-label="Filtrer les fiches" data-ia="filterTipsAria"></div>
     <div id="tips"></div>
   </section>
 
   <section class="view" id="v-apropos">
-    <div class="panel prose">
+    <div class="panel prose" data-ih="aboutHtml">
       <h2>À propos de ce prototype</h2>
       <p>Séances Hand aide les entraîneurs à préparer leurs séances. Tu choisis un thème, une catégorie, une durée et le nombre de joueurs présents. Le site assemble alors une séance progressive : échauffement, exercices, situation de jeu et retour au calme.</p>
       <p>Chaque exercice a sa planche tactique animée. Appuie sur ▶ pour voir les déplacements étape par étape.</p>
@@ -258,7 +269,7 @@ const EX = [
  orga:["Groupes de 3 sur la largeur, un ballon.","Aller en passes, retour en course sur l'extérieur."],
  consignes:["Après chaque passe, on court derrière le receveur.","Prendre la balle en course, bras armé haut."],
  variantes:["Finir par un tir au but.","Imposer la passe à rebond pour les plus jeunes."],
- board:{pl:[["L","a",6,19,"G"],["C","a",10,19,"C"],["R","a",14,19,"D"]],b:"C",s:[
+ board:{pl:[["L","a",6,19,"1"],["C","a",10,19,"2"],["R","a",14,19,"3"]],b:"C",s:[
   {t:"Le joueur du centre passe à gauche puis court derrière lui.",m:{C:[5.5,15.6],L:[8.6,16]},p:"L"},
   {t:"Le nouveau porteur passe à droite et court derrière le receveur.",m:{L:[14.6,12.5],R:[11,12.6]},p:"R"},
   {t:"On continue le 8 jusqu'à la zone, puis tir.",m:{R:[5.6,9.2],C:[8.4,9.4]},p:"C"},
@@ -690,7 +701,7 @@ const EX = [
  orga:["Une colonne à l'ARG, une à l'ARD, un ballon par joueur.","Chaque joueur passe au joueur d'en face, reçoit en retour et tire."],
  consignes:["Tir en course, sans arrêt.","Le gardien commence par des tirs placés, puis les tireurs accélèrent.","Changer de colonne après son tir."],
  variantes:["Passe au pivot puis tir du pivot.","Tir en suspension au-dessus d'un bras tendu (plot haut ou partenaire)."],
- board:{pl:[["L","a",5,13,"G"],["R","a",15,13,"D"]].concat(GK),b:"L",s:[
+ board:{pl:[["L","a",5,13,"1"],["R","a",15,13,"2"]].concat(GK),b:"L",s:[
   {t:"Le joueur de gauche donne en diagonale et démarre vers le but.",m:{L:[6.4,11]},p:"R"},
   {t:"Le joueur de droite lui rend la balle dans la course.",m:{L:[7.6,9.4]},p:"L"},
   {t:"Tir en course.",p:"BUT"}]}},
@@ -826,7 +837,7 @@ const EX = [
  orga:["Trois attaquants contre deux défenseurs sur 9 m, un gardien."],
  consignes:["Le porteur attaque entre les deux défenseurs.","Quand les deux viennent sur lui, il passe à l'extérieur.","Les autres restent écartés."],
  variantes:["Ajouter un troisième défenseur qui part en retard."],
- board:{pl:[["L","a",4,12,"G"],["C","a",10,12.6,"C"],["R","a",16,12,"D"],["D1","d",8,7.6,"1"],["D2","d",12,7.6,"2"]].concat(GK),b:"C",s:[
+ board:{pl:[["L","a",4,12,"1"],["C","a",10,12.6,"2"],["R","a",16,12,"3"],["D1","d",8,7.6,"1"],["D2","d",12,7.6,"2"]].concat(GK),b:"C",s:[
   {t:"Le porteur attaque l'intervalle entre les deux défenseurs.",m:{C:[10,9.6],L:[4,10],R:[16,10]}},
   {t:"Les deux défenseurs se resserrent sur lui.",m:{D1:[9.2,8.4],D2:[10.8,8.4]}},
   {t:"Passe à droite au joueur laissé libre.",m:{R:[14.6,8.6]},p:"R"},
@@ -1011,7 +1022,7 @@ function makeBoard(b){
   const id = "bd"+(boardCount++);
   const wrap = document.createElement("div"); wrap.className="board";
   const L = b.full?40:20;
-  const svg = el("svg",{viewBox:b.full?"-0.6 -1.7 21.2 43.4":"-0.6 -1.7 21.2 22.2",role:"img","aria-label":b.full?"Planche tactique, terrain entier":"Planche tactique, demi-terrain"});
+  const svg = el("svg",{viewBox:b.full?"-0.6 -1.7 21.2 43.4":"-0.6 -1.7 21.2 22.2",role:"img","aria-label":b.full?t("boardFull"):t("boardHalf")});
   const defs = el("defs",{},svg);
   const mk=(mid,col)=>{const m=el("marker",{id:mid,viewBox:"0 0 10 10",refX:"8",refY:"5",markerWidth:"4",markerHeight:"4",orient:"auto-start-reverse"},defs);el("path",{d:"M0,0 L10,5 L0,10 z",fill:col},m);};
   mk(id+"r","#ffffff"); mk(id+"p","#f2c12e");
@@ -1028,7 +1039,7 @@ function makeBoard(b){
     el("rect",{x:8.5,y:40,width:3,height:1,fill:"none",stroke:"#fff","stroke-width":"0.14"},svg);
     el("line",{x1:0,y1:20,x2:20,y2:20,stroke:"#fff","stroke-width":"0.12"},svg);
   } else {
-    el("text",{x:19.7,y:19.6,"text-anchor":"end","font-size":"0.6",fill:"#ffffffaa","font-family":"Source Sans 3, sans-serif"},svg).textContent="ligne médiane";
+    el("text",{x:19.7,y:19.6,"text-anchor":"end","font-size":"0.6",fill:"#ffffffaa","font-family":"Source Sans 3, sans-serif"},svg).textContent=t("midline");
   }
   el("rect",{x:0,y:0,width:20,height:L,fill:"none",stroke:"#fff","stroke-width":"0.12"},svg);
   const arrows = el("g",{},svg);
@@ -1040,7 +1051,7 @@ function makeBoard(b){
     if(type==="d") el("rect",{x:-0.66,y:-0.66,width:1.32,height:1.32,rx:0.25,fill:COLORS.d,stroke:"#fff","stroke-width":"0.08"},g);
     else if(type==="c") el("path",{d:"M0 -0.45 L0.42 0.35 L-0.42 0.35 Z",fill:"#ffd43b",stroke:"#7a5b00","stroke-width":"0.06"},g);
     else el("circle",{r:0.7,fill:COLORS[type],stroke:"#fff","stroke-width":"0.08"},g);
-    if(lab){const t=el("text",{y:0.2,"text-anchor":"middle","font-size":lab.length>2?"0.48":"0.6","font-weight":"700",fill:"#fff","font-family":"Source Sans 3, sans-serif"},g);t.textContent=lab;}
+    if(lab){const t=el("text",{y:0.2,"text-anchor":"middle","font-size":(POSL[lab]||lab).length>2?"0.48":"0.6","font-weight":"700",fill:"#fff","font-family":"Source Sans 3, sans-serif"},g);t.textContent=POSL[lab]||lab;}
     nodes[pid]=g;
   });
   const ball = el("circle",{r:0.34,fill:"#ffd43b",stroke:"#3b2f00","stroke-width":"0.08"},svg);
@@ -1070,10 +1081,10 @@ function makeBoard(b){
   }
   const cap = document.createElement("div"); cap.className="caption";
   function caption(){
-    if(N===0){cap.textContent="Placement de départ des joueurs.";return;}
-    cap.innerHTML = cur===0 ? `<strong>Départ.</strong> ${N} étapes : appuie sur ▶ pour lancer.` : `<strong>Étape ${cur}/${N}.</strong> ${steps[cur-1].t}`;
+    if(N===0){cap.textContent=t("capStart0");return;}
+    cap.innerHTML = cur===0 ? t("capStart",{n:N}) : `<strong>${t("capStep",{i:cur,n:N})}</strong> ${steps[cur-1].t}`;
     count.textContent = `${cur}/${N}`;
-    playBtn.textContent = playing ? "❚❚ Pause" : (cur>=N ? "↺ Rejouer" : "▶ Lecture");
+    playBtn.textContent = playing ? t("pause") : (cur>=N ? t("replay") : t("play"));
   }
   function show(c){cur=c;place(snaps[c].pos,ballPt(snaps[c]));drawArrows(c===0?0:c-1,c===0);caption();}
   function animate(i, done){
@@ -1104,9 +1115,9 @@ function makeBoard(b){
     next();
   }
   const ctrl=document.createElement("div"); ctrl.className="ctrl";
-  const prevBtn=document.createElement("button"); prevBtn.type="button"; prevBtn.textContent="◀"; prevBtn.setAttribute("aria-label","Étape précédente");
+  const prevBtn=document.createElement("button"); prevBtn.type="button"; prevBtn.textContent="◀"; prevBtn.setAttribute("aria-label",t("prevStep"));
   const playBtn=document.createElement("button"); playBtn.type="button"; playBtn.className="play";
-  const nextBtn=document.createElement("button"); nextBtn.type="button"; nextBtn.textContent="▶|"; nextBtn.setAttribute("aria-label","Étape suivante");
+  const nextBtn=document.createElement("button"); nextBtn.type="button"; nextBtn.textContent="▶|"; nextBtn.setAttribute("aria-label",t("nextStep"));
   const count=document.createElement("span"); count.className="count";
   prevBtn.onclick=()=>{stop(); show(Math.max(0,cur-1));};
   nextBtn.onclick=()=>{stop(); if(cur<N) animate(cur);};
@@ -1115,7 +1126,7 @@ function makeBoard(b){
   if(N>0) wrap.appendChild(ctrl);
   wrap.appendChild(cap);
   const leg=document.createElement("div"); leg.className="legend";
-  leg.innerHTML='<span><i style="background:#1f4e9c"></i>Attaque</span><span><i class="sq" style="background:#e8590c"></i>Défense</span><span><i style="background:#2b8a3e"></i>Gardien</span><span><i class="ln"></i>Course</span><span><i class="dl"></i>Passe / tir</span>';
+  leg.innerHTML=`<span><i style="background:#1f4e9c"></i>${t("legAtt")}</span><span><i class="sq" style="background:#e8590c"></i>${t("legDef")}</span><span><i style="background:#2b8a3e"></i>${t("legGk")}</span><span><i class="ln"></i>${t("legRun")}</span><span><i class="dl"></i>${t("legPass")}</span>`;
   wrap.appendChild(leg);
   show(0);
   return wrap;
@@ -1128,15 +1139,15 @@ function exCard(ex, mins, adaptMsg){
   card.style.setProperty("--phase",ph.c);
   const txt=document.createElement("div");
   const chips=[`<span class="chip phase">${ph.nom}</span>`];
-  if(mins) chips.push(`<span class="chip">${mins} min</span>`);
-  chips.push(`<span class="chip">${CATS[ex.min]}${ex.max>ex.min?" à "+CATS[ex.max]:""}</span>`);
-  chips.push(`<span class="chip">${ex.joueurs} joueurs min.</span>`);
+  if(mins) chips.push(`<span class="chip">${t("min",{n:mins})}</span>`);
+  chips.push(`<span class="chip">${catRange(ex.min,ex.max)}</span>`);
+  chips.push(`<span class="chip">${t("playersMin",{n:ex.joueurs})}</span>`);
   const list=(arr)=>arr&&arr.length?"<ul>"+arr.map(x=>`<li>${x}</li>`).join("")+"</ul>":"";
   txt.innerHTML=`<div class="chips">${chips.join("")}</div><h3>${ex.titre}</h3>
-    <p><strong>Objectif :</strong> ${ex.objectif}</p>
-    <h4>Organisation</h4>${list(ex.orga)}
-    <h4>Consignes</h4>${list(ex.consignes)}
-    ${ex.variantes&&ex.variantes.length?"<h4>Variantes</h4>"+list(ex.variantes):""}
+    <p><strong>${t("objective")}</strong> ${ex.objectif}</p>
+    <h4>${t("orga")}</h4>${list(ex.orga)}
+    <h4>${t("consignes")}</h4>${list(ex.consignes)}
+    ${ex.variantes&&ex.variantes.length?`<h4>${t("variantes")}</h4>`+list(ex.variantes):""}
     ${adaptMsg?`<p class="adapt">${adaptMsg}</p>`:""}`;
   card.appendChild(txt);
   if(ex.board) card.appendChild(makeBoard(ex.board));
@@ -1148,15 +1159,15 @@ const $=s=>document.querySelector(s);
 function fill(){
   $("#theme").innerHTML=Object.entries(THEMES).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
   $("#cat").innerHTML=CATS.map((c,i)=>`<option value="${i}" ${i===3?"selected":""}>${c}</option>`).join("");
-  let o=""; for(let n=6;n<=20;n++) o+=`<option value="${n}" ${n===14?"selected":""}>${n} joueurs</option>`; $("#nbj").innerHTML=o;
+  let o=""; for(let n=6;n<=20;n++) o+=`<option value="${n}" ${n===14?"selected":""}>${t("nPlayers",{n})}</option>`; $("#nbj").innerHTML=o;
 }
 const r5=x=>Math.max(5,Math.round(x/5)*5);
 const okCat=(e,c)=>c>=e.min&&c<=e.max;
 
 function adaptFor(ex,nbj){
   if(nbj>=ex.joueurs) return "";
-  if(ex.joueurs>=12) return `Avec ${nbj} joueurs : joue à ${Math.max(3,Math.floor((nbj-2)/2))} contre ${Math.max(3,Math.floor((nbj-2)/2))} sur un demi-terrain, sans les ailiers.`;
-  return `Avec ${nbj} joueurs : réduis le nombre de groupes et fais tourner plus vite.`;
+  if(ex.joueurs>=12) return t("adaptBig",{n:nbj,k:Math.max(3,Math.floor((nbj-2)/2))});
+  return t("adaptSmall",{n:nbj});
 }
 
 /* Tirage au hasard : garde l'ordre de progression mais varie les exercices */
@@ -1219,12 +1230,12 @@ function alternatives(it,items,theme,c){
 function sessionText(sessions,theme,c,T){
   let t=`${THEMES[theme]} - ${CATS[c]} - ${T} min\n`;
   const P=PHILO[theme];
-  if(P){t+=`\nCe qu'on cherche : ${P.intention}\nObjectif ${CATS[c]} : ${P.age[ageOf(c)]}\nMots clés : ${P.cues.join(" / ")}\n`;}
+  if(P){t+=`\n${T_("txtIntent")} ${P.intention}\n${T_("txtObjCat",{c:CATS[c]})} ${P.age[ageOf(c)]}\n${T_("txtCues")} ${P.cues.join(" / ")}\n`;}
   sessions.forEach((items,si)=>{
-    if(sessions.length>1) t+=`\nSÉANCE ${si+1}\n`;
+    if(sessions.length>1) t+=`\n${T_("txtSession",{n:si+1})}\n`;
     let clock=0;
     items.forEach(it=>{
-      t+=`\n${clock}' - ${clock+it.min}' | ${PHASES[it.ex.phase].nom} : ${it.ex.titre}\n  Objectif : ${it.ex.objectif}\n`;
+      t+=`\n${clock}' - ${clock+it.min}' | ${PHASES[it.ex.phase].nom} : ${it.ex.titre}\n  ${T_("objective")} ${it.ex.objectif}\n`;
       it.ex.consignes.forEach(x=>t+=`  - ${x}\n`);
       clock+=it.min;
     });
@@ -1248,34 +1259,34 @@ function render(){
   const {theme,c,T,nbj,n,sessions}=STATE;
   const out=$("#out"); out.innerHTML="";
   if(!sessions){
-    out.innerHTML=`<div class="note warn">Ce thème n'est pas encore prévu pour les ${CATS[c]}. Essaie « ${c<=2?THEMES.intervalle:THEMES["attaque-15"]} ».</div>`;
+    out.innerHTML=`<div class="note warn">${t("noTheme",{c:CATS[c],t:c<=2?THEMES.intervalle:THEMES["attaque-15"]})}</div>`;
     return;
   }
   const sum=document.createElement("div"); sum.className="summary";
-  sum.innerHTML=`<div><h2>${THEMES[theme]}</h2><div class="meta">${CATS[c]} · ${T} min · ${nbj} joueurs · ${n>1?n+" séances":"1 séance"}</div></div>`;
+  sum.innerHTML=`<div><h2>${THEMES[theme]}</h2><div class="meta">${CATS[c]} · ${t("min",{n:T})} · ${t("nPlayers",{n:nbj})} · ${n>1?t("nSessions",{n}):t("oneSession")}</div></div>`;
   const right=document.createElement("div"); right.className="row";
-  const again=document.createElement("button"); again.className="btn"; again.type="button"; again.textContent="🎲 Autre proposition";
+  const again=document.createElement("button"); again.className="btn"; again.type="button"; again.textContent=t("again");
   again.onclick=()=>generate(true);
-  const copy=document.createElement("button"); copy.className="btn ghost"; copy.type="button"; copy.textContent="Copier la séance";
-  const print=document.createElement("button"); print.className="btn ghost"; print.type="button"; print.textContent="Imprimer / PDF";
+  const copy=document.createElement("button"); copy.className="btn ghost"; copy.type="button"; copy.textContent=t("copy");
+  const print=document.createElement("button"); print.className="btn ghost"; print.type="button"; print.textContent=t("print");
   print.onclick=()=>window.print();
   const toast=document.createElement("span"); toast.className="toast"; toast.setAttribute("aria-live","polite");
-  copy.onclick=async()=>{try{await navigator.clipboard.writeText(sessionText(sessions,theme,c,T));toast.textContent="Copiée !";}catch(e){toast.textContent="Copie impossible ici.";}};
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(sessionText(sessions,theme,c,T));toast.textContent=t("copied");}catch(e){toast.textContent=t("copyFail");}};
   right.append(again,copy,print,toast); sum.appendChild(right); out.appendChild(sum);
   if(c<=1){
     const n1=document.createElement("div"); n1.className="note";
-    n1.innerHTML="<strong>Jeunes joueurs :</strong> utilise des petits buts (2,40 m x 1,70 m) et une zone à 4 ou 5 m. Fais jouer en effectif réduit, avec une relance immédiate du gardien après chaque but.";
+    n1.innerHTML=t("youngNote");
     out.appendChild(n1);
   }
   const ib=intentBox(theme,c); if(ib) out.appendChild(ib);
   if(STATE._tipFor!==sessions){STATE.tip=pickTip(theme,c);STATE._tipFor=sessions;}
   if(STATE.tip){
     const n2=document.createElement("div"); n2.className="note tip";
-    n2.innerHTML=`<strong>Le conseil du coach : ${STATE.tip.titre}${/[?!]$/.test(STATE.tip.titre)?"":"."}</strong> ${STATE.tip.idee} <a href="#conseils">Lire la fiche</a>`;
+    n2.innerHTML=`<strong>${t("coachTip")} ${STATE.tip.titre}${/[?!？！。]$/.test(STATE.tip.titre)?"":t("dot")}</strong> ${STATE.tip.idee} <a href="#conseils">${t("readTip")}</a>`;
     out.appendChild(n2);
   }
   sessions.forEach((items,si)=>{
-    if(sessions.length>1){const h=document.createElement("h2");h.className="session-title";h.textContent=`Séance ${si+1}`+(si===0?" : découvrir":si===sessions.length-1?" : enchaîner et jouer":" : approfondir");out.appendChild(h);}
+    if(sessions.length>1){const h=document.createElement("h2");h.className="session-title";h.textContent=t("sessionN",{n:si+1})+(si===0?t("sDiscover"):si===sessions.length-1?t("sPlay"):t("sDeepen"));out.appendChild(h);}
     const tl=document.createElement("div"); tl.className="timeline"; tl.setAttribute("aria-hidden","true");
     items.forEach(it=>{const sp=document.createElement("span");sp.style.width=(it.min/T*100)+"%";sp.style.background=PHASES[it.ex.phase].c;sp.title=it.ex.titre;tl.appendChild(sp);});
     out.appendChild(tl);
@@ -1283,7 +1294,7 @@ function render(){
       const card=exCard(it.ex,it.min,adaptFor(it.ex,nbj));
       const alts=alternatives(it,items,theme,c);
       const b=document.createElement("button"); b.type="button"; b.className="swap";
-      b.textContent=alts.length?`↻ Changer cet exercice (${alts.length} autre${alts.length>1?"s":""})`:"Pas d'autre exercice pour l'instant";
+      b.textContent=alts.length?t(alts.length>1?"swapN":"swap1",{n:alts.length}):t("swapNone");
       b.disabled=!alts.length;
       b.onclick=()=>{items[ii]={ex:alts[Math.floor(Math.random()*alts.length)],min:it.min};const y=window.scrollY;render();window.scrollTo(0,y);};
       card.firstChild.appendChild(b);
@@ -1296,7 +1307,7 @@ function render(){
 let libTheme="attaque-15";
 function renderLib(){
   const f=$("#lib-filters");
-  f.innerHTML=Object.entries(THEMES).concat([["all","Échauffements et fin de séance"]]).map(([k,v])=>`<button type="button" data-k="${k}" aria-pressed="${k===libTheme}">${v}</button>`).join("");
+  f.innerHTML=Object.entries(THEMES).concat([["all",t("libAll")]]).map(([k,v])=>`<button type="button" data-k="${k}" aria-pressed="${k===libTheme}">${v}</button>`).join("");
   f.querySelectorAll("button").forEach(b=>b.onclick=()=>{libTheme=b.dataset.k;renderLib();});
   const lib=$("#lib"); lib.innerHTML="";
   const order={echauffement:0,tech:1,situation:2,jeu:3,calme:4};
@@ -1358,10 +1369,10 @@ const PHILO={
 function intentBox(theme,c){
   const P=PHILO[theme]; if(!P) return null;
   const d=document.createElement("div"); d.className="intent";
-  d.innerHTML=`<h3>Ce qu'on cherche</h3><p>${P.intention}</p>
-    <h4>Principes de jeu</h4><ul>${P.principes.map(x=>`<li>${x}</li>`).join("")}</ul>
-    <h4>Objectif pour les ${CATS[c]}</h4><p>${P.age[ageOf(c)]}</p>
-    <h4>Mots clés à dire aux joueurs</h4><div class="cues">${P.cues.map(x=>`<span class="cue">${x}</span>`).join("")}</div>`;
+  d.innerHTML=`<h3>${t("intentTitle")}</h3><p>${P.intention}</p>
+    <h4>${t("principles")}</h4><ul>${P.principes.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <h4>${t("objFor",{c:CATS[c]})}</h4><p>${P.age[ageOf(c)]}</p>
+    <h4>${t("cuesTitle")}</h4><div class="cues">${P.cues.map(x=>`<span class="cue">${x}</span>`).join("")}</div>`;
   return d;
 }
 
@@ -1369,28 +1380,11 @@ function renderPhilo(){
   const box=$("#philo");
   const themes=Object.keys(THEMES).map(k=>{const P=PHILO[k];return `<details class="philo-theme"><summary>${THEMES[k]}</summary>
     <p>${P.intention}</p><ul>${P.principes.map(x=>`<li>${x}</li>`).join("")}</ul>
-    <p><strong>Mots clés :</strong> ${P.cues.join(" · ")}</p>
+    <p><strong>${t("keywords")}</strong> ${P.cues.join(" · ")}</p>
     ${k==="jeux-jeunes"?"":`<ul>${AGES.map((a,i)=>`<li><strong>${a.nom} :</strong> ${P.age[i]}</li>`).join("")}</ul>`}</details>`;}).join("");
-  box.innerHTML=`<h2>Philosophie de jeu</h2>
-  <p>Les exercices ne servent à rien sans une idée claire du jeu qu'on veut. Voici les grandes idées sur lesquelles reposent les séances du site.</p>
-  <h3>1. Le jeu d'abord</h3>
-  <p>On apprend le handball en jouant. Chaque séance finit par une situation de jeu, et les exercices techniques préparent ce moment. Un exercice doit toujours ressembler à un vrai moment de match : un but, des adversaires, des choix à faire.</p>
-  <h3>2. Attaquer, c'est avancer vers le but</h3>
-  <ul><li>Chercher d'abord le chemin le plus court vers le but.</li><li>Fixer un défenseur pour créer le surnombre ailleurs.</li><li>Jouer vite, mais faire le bon choix : tirer, passer ou garder le ballon.</li></ul>
-  <h3>3. Défendre, c'est récupérer le ballon</h3>
-  <ul><li>On défend pour reprendre le ballon, pas seulement pour empêcher le but.</li><li>On défend en avançant et ensemble, en parlant.</li><li>Chez les jeunes, on privilégie les défenses qui avancent, avant les systèmes alignés sur la zone.</li></ul>
-  <h3>4. Les transitions font gagner les matchs</h3>
-  <p>Le moment où le ballon change de camp est décisif. On relance vite après une récupération, et on se replie tout de suite après une perte de balle.</p>
-  <h3>5. Le gardien fait partie de l'équipe</h3>
-  <p>Il défend avec ses partenaires, les dirige et lance l'attaque. Il s'entraîne avec le groupe, pas à côté.</p>
-  <h3>6. La place de l'entraîneur</h3>
-  <ul><li>Une ou deux consignes à la fois, courtes et précises.</li><li>Poser des questions plutôt que tout expliquer : « Où était l'espace libre ? »</li><li>Faire jouer tout le monde et valoriser les progrès.</li><li>Adapter l'exercice s'il ne fonctionne pas : plus d'espace, moins de défenseurs, une règle en plus.</li></ul>
-  <h3>7. Une progression selon l'âge</h3>
-  <ul>${AGES.map((a,i)=>`<li><strong>${a.nom} :</strong> ${["jouer, bouger, toucher beaucoup de ballons, découvrir tous les postes et défendre en avançant.","apprendre à faire des choix, découvrir les rôles et les défenses étagées, puis les systèmes.","maîtriser les systèmes, s'adapter à l'adversaire et gagner en efficacité."][i]}</li>`).join("")}</ul>
-  <h3>Les thèmes un par un</h3>
-  <p>Touche un thème pour voir ses principes, les mots clés et les objectifs par âge.</p>
+  box.innerHTML=`<h2>${t("navPhilo")}</h2>${t("philoBody").replace("{AGES}",AGES.map((a,i)=>`<li><strong>${a.nom} :</strong> ${t("philoAges")[i]}</li>`).join(""))}
   ${themes}
-  <p class="note">Ce texte présente des principes généraux de la formation en handball, rédigés pour ce site. Il doit être relu et complété par un entraîneur.</p>`;
+  <p class="note">${t("philoNote")}</p>`;
 }
 
 /* ---------- Le coin de l'entraîneur ---------- */
@@ -1492,18 +1486,87 @@ function pickTip(theme,c){
 let tipCat="all";
 function renderTips(){
   const f=$("#tip-filters");
-  f.innerHTML=[["all","Toutes les fiches"]].concat(Object.entries(TIPCATS).map(([k,v])=>[k,v.nom])).map(([k,v])=>`<button type="button" data-k="${k}" aria-pressed="${k===tipCat}">${v}</button>`).join("");
+  f.innerHTML=[["all",t("allTips")]].concat(Object.entries(TIPCATS).map(([k,v])=>[k,v.nom])).map(([k,v])=>`<button type="button" data-k="${k}" aria-pressed="${k===tipCat}">${v}</button>`).join("");
   f.querySelectorAll("button").forEach(b=>b.onclick=()=>{tipCat=b.dataset.k;renderTips();});
   const box=$("#tips"); box.innerHTML="";
   TIPS.filter(t=>tipCat==="all"||t.cat===tipCat).forEach(t=>{
     const cat=TIPCATS[t.cat]; const a=document.createElement("article"); a.className="tipcard"; a.id="fiche-"+t.id;
     a.style.setProperty("--tc",cat.c);
-    a.innerHTML=`<div class="chips"><span class="chip phase" style="background:${cat.c}">${cat.nom}</span><span class="chip">${CATS[t.min]}${t.max>t.min?" à "+CATS[t.max]:""}</span></div>
+    a.innerHTML=`<div class="chips"><span class="chip phase" style="background:${cat.c}">${cat.nom}</span><span class="chip">${catRange(t.min,t.max)}</span></div>
       <h3>${t.titre}</h3><p class="idee">${t.idee}</p>${t.texte.map(p=>`<p>${p}</p>`).join("")}
-      <h4>En pratique</h4><ul>${t.pratique.map(p=>`<li>${p}</li>`).join("")}</ul>
-      <p class="src">${t.src}. Texte réécrit pour Séances Hand.</p>`;
+      <h4>${T_("inPractice")}</h4><ul>${t.pratique.map(p=>`<li>${p}</li>`).join("")}</ul>
+      <p class="src">${t.src}. ${T_("rewritten")}</p>`;
     box.appendChild(a);
   });
+}
+
+/* ---------- Langues ---------- */
+const UI_FR = {"langLabel": "Langue", "subtitle": "Prépare ta séance d'entraînement en 30 secondes, avec les planches tactiques", "navAria": "Sections", "navSeance": "Préparer une séance", "navLib": "Bibliothèque d'exercices", "navPhilo": "Philosophie de jeu", "navTips": "Le coin de l'entraîneur", "navAbout": "À propos", "lblTheme": "Thème", "lblCat": "Catégorie", "lblDuree": "Durée", "lblNbj": "Joueurs présents", "lblNbs": "Nombre de séances", "optS1": "1 séance", "optS2": "Cycle de 2 séances", "optS3": "Cycle de 3 séances", "btnGo": "Générer la séance", "filterThemeAria": "Filtrer par thème", "filterTipsAria": "Filtrer les fiches", "tipsTitle": "Le coin de l'entraîneur", "tipsIntro": "Des idées de fond sur la motivation, la formation des jeunes, les principes de jeu et la santé des joueurs. Chaque fiche se termine par du concret pour ta prochaine séance.", "aboutHtml": "<h2>À propos de ce prototype</h2>\n      <p>Séances Hand aide les entraîneurs à préparer leurs séances. Tu choisis un thème, une catégorie, une durée et le nombre de joueurs présents. Le site assemble alors une séance progressive : échauffement, exercices, situation de jeu et retour au calme.</p>\n      <p>Chaque exercice a sa planche tactique animée. Appuie sur ▶ pour voir les déplacements étape par étape.</p>\n      <h3>Lire les planches</h3>\n      <ul>\n        <li>Ronds bleus : attaquants (AG, ARG, DC, ARD, AD, PV).</li>\n        <li>Carrés orange : défenseurs, numérotés de l'extérieur gauche vers la droite (Av = avancé).</li>\n        <li>Rond vert : gardien. Rond gris : passeur fixe.</li>\n        <li>Trait plein : déplacement d'un joueur. Pointillés jaunes : passe ou tir.</li>\n      </ul>\n      <h3>Contenu</h3>\n      <p>C'est un contenu de démonstration. Les exercices sont rédigés à partir des principes de la formation fédérale et de documents techniques, puis réécrits et redessinés. Avant la mise en ligne publique, chaque fiche sera relue par un entraîneur.</p>", "boardFull": "Planche tactique, terrain entier", "boardHalf": "Planche tactique, demi-terrain", "midline": "ligne médiane", "capStart0": "Placement de départ des joueurs.", "capStart": "<strong>Départ.</strong> {n} étapes : appuie sur ▶ pour lancer.", "capStep": "Étape {i}/{n}.", "pause": "❚❚ Pause", "replay": "↺ Rejouer", "play": "▶ Lecture", "prevStep": "Étape précédente", "nextStep": "Étape suivante", "legAtt": "Attaque", "legDef": "Défense", "legGk": "Gardien", "legRun": "Course", "legPass": "Passe / tir", "min": "{n} min", "catRange": "{a} à {b}", "playersMin": "{n} joueurs min.", "objective": "Objectif :", "orga": "Organisation", "consignes": "Consignes", "variantes": "Variantes", "nPlayers": "{n} joueurs", "adaptBig": "Avec {n} joueurs : joue à {k} contre {k} sur un demi-terrain, sans les ailiers.", "adaptSmall": "Avec {n} joueurs : réduis le nombre de groupes et fais tourner plus vite.", "txtIntent": "Ce qu'on cherche :", "txtObjCat": "Objectif {c} :", "txtCues": "Mots clés :", "txtSession": "SÉANCE {n}", "noTheme": "Ce thème n'est pas encore prévu pour les {c}. Essaie « {t} ».", "nSessions": "{n} séances", "oneSession": "1 séance", "again": "🎲 Autre proposition", "copy": "Copier la séance", "print": "Imprimer / PDF", "copied": "Copiée !", "copyFail": "Copie impossible ici.", "youngNote": "<strong>Jeunes joueurs :</strong> utilise des petits buts (2,40 m x 1,70 m) et une zone à 4 ou 5 m. Fais jouer en effectif réduit, avec une relance immédiate du gardien après chaque but.", "coachTip": "Le conseil du coach :", "dot": ".", "readTip": "Lire la fiche", "sessionN": "Séance {n}", "sDiscover": " : découvrir", "sPlay": " : enchaîner et jouer", "sDeepen": " : approfondir", "swap1": "↻ Changer cet exercice ({n} autre)", "swapN": "↻ Changer cet exercice ({n} autres)", "swapNone": "Pas d'autre exercice pour l'instant", "libAll": "Échauffements et fin de séance", "intentTitle": "Ce qu'on cherche", "principles": "Principes de jeu", "objFor": "Objectif pour les {c}", "cuesTitle": "Mots clés à dire aux joueurs", "philoBody": "<p>Les exercices ne servent à rien sans une idée claire du jeu qu'on veut. Voici les grandes idées sur lesquelles reposent les séances du site.</p>\n  <h3>1. Le jeu d'abord</h3>\n  <p>On apprend le handball en jouant. Chaque séance finit par une situation de jeu, et les exercices techniques préparent ce moment. Un exercice doit toujours ressembler à un vrai moment de match : un but, des adversaires, des choix à faire.</p>\n  <h3>2. Attaquer, c'est avancer vers le but</h3>\n  <ul><li>Chercher d'abord le chemin le plus court vers le but.</li><li>Fixer un défenseur pour créer le surnombre ailleurs.</li><li>Jouer vite, mais faire le bon choix : tirer, passer ou garder le ballon.</li></ul>\n  <h3>3. Défendre, c'est récupérer le ballon</h3>\n  <ul><li>On défend pour reprendre le ballon, pas seulement pour empêcher le but.</li><li>On défend en avançant et ensemble, en parlant.</li><li>Chez les jeunes, on privilégie les défenses qui avancent, avant les systèmes alignés sur la zone.</li></ul>\n  <h3>4. Les transitions font gagner les matchs</h3>\n  <p>Le moment où le ballon change de camp est décisif. On relance vite après une récupération, et on se replie tout de suite après une perte de balle.</p>\n  <h3>5. Le gardien fait partie de l'équipe</h3>\n  <p>Il défend avec ses partenaires, les dirige et lance l'attaque. Il s'entraîne avec le groupe, pas à côté.</p>\n  <h3>6. La place de l'entraîneur</h3>\n  <ul><li>Une ou deux consignes à la fois, courtes et précises.</li><li>Poser des questions plutôt que tout expliquer : « Où était l'espace libre ? »</li><li>Faire jouer tout le monde et valoriser les progrès.</li><li>Adapter l'exercice s'il ne fonctionne pas : plus d'espace, moins de défenseurs, une règle en plus.</li></ul>\n  <h3>7. Une progression selon l'âge</h3>\n  <ul>{AGES}</ul>\n  <h3>Les thèmes un par un</h3>\n  <p>Touche un thème pour voir ses principes, les mots clés et les objectifs par âge.</p>", "philoAges": ["jouer, bouger, toucher beaucoup de ballons, découvrir tous les postes et défendre en avançant.", "apprendre à faire des choix, découvrir les rôles et les défenses étagées, puis les systèmes.", "maîtriser les systèmes, s'adapter à l'adversaire et gagner en efficacité."], "philoNote": "Ce texte présente des principes généraux de la formation en handball, rédigés pour ce site. Il doit être relu et complété par un entraîneur.", "keywords": "Mots clés :", "allTips": "Toutes les fiches", "inPractice": "En pratique", "rewritten": "Texte réécrit pour Séances Hand.", "notForCat": " (pas pour cette catégorie)"};
+const LANGS=[["fr","Français"],["en","English"],["es","Español"],["de","Deutsch"],["it","Italiano"],["pt","Português (Portugal)"],["pt-BR","Português (Brasil)"],["nl","Nederlands"],["pl","Polski"],["tr","Türkçe"],["ja","日本語"],["ko","한국어"],["zh","中文"],["ar","العربية"]];
+const LANG_KEY="seances-hand-langue";
+let LANG="fr", UI=UI_FR, POSL={};
+function t(k,p){let s=(UI&&UI[k]!==undefined)?UI[k]:UI_FR[k]; if(typeof s!=="string") return s; if(p) s=s.replace(/\{(\w+)\}/g,(m,x)=>p[x]!==undefined?p[x]:m); return s;}
+const T_=t;
+function catRange(a,b){return b>a?t("catRange",{a:CATS[a],b:CATS[b]}):CATS[a];}
+/* Textes français d'origine, pour revenir au français et compléter une traduction */
+function snapshot(){
+  const ex={}; EX.forEach(e=>{ex[e.id]={titre:e.titre,objectif:e.objectif,orga:e.orga,consignes:e.consignes,variantes:e.variantes};
+    if(e.board&&e.board.s&&e.board.s.length) ex[e.id].steps=e.board.s.map(s=>s.t);});
+  const philo={}; for(const k in PHILO) philo[k]={intention:PHILO[k].intention,principes:PHILO[k].principes,cues:PHILO[k].cues,age:PHILO[k].age};
+  const tips={}; TIPS.forEach(x=>tips[x.id]={titre:x.titre,idee:x.idee,texte:x.texte,pratique:x.pratique,src:x.src});
+  const phases={}; for(const k in PHASES) phases[k]=PHASES[k].nom;
+  const tipcats={}; for(const k in TIPCATS) tipcats[k]=TIPCATS[k].nom;
+  return JSON.parse(JSON.stringify({themes:THEMES,phases,ages:AGES.map(a=>a.nom),tipcats,ex,philo,tips}));
+}
+let FR=null;
+function applyPack(pk){
+  const g=(o,k,f)=>o&&o[k]!==undefined&&o[k]!==null?o[k]:f;
+  for(const k in FR.themes) THEMES[k]=g(pk.themes,k,FR.themes[k]);
+  for(const k in FR.phases) PHASES[k].nom=g(pk.phases,k,FR.phases[k]);
+  AGES.forEach((a,i)=>a.nom=g(pk.ages,i,FR.ages[i]));
+  for(const k in FR.tipcats) TIPCATS[k].nom=g(pk.tipcats,k,FR.tipcats[k]);
+  EX.forEach(e=>{const f=FR.ex[e.id], p=(pk.ex||{})[e.id]||{};
+    for(const k of ["titre","objectif","orga","consignes","variantes"]) e[k]=g(p,k,f[k]);
+    if(f.steps) e.board.s.forEach((s,i)=>s.t=g(p.steps,i,f.steps[i]));});
+  for(const k in FR.philo){const f=FR.philo[k],p=(pk.philo||{})[k]||{}; for(const x in f) PHILO[k][x]=g(p,x,f[x]);}
+  TIPS.forEach(x=>{const f=FR.tips[x.id],p=(pk.tips||{})[x.id]||{}; for(const k in f) x[k]=g(p,k,f[k]);});
+  UI=pk.ui||UI_FR; POSL=pk.pos||{}; CATS[5]=(pk.ui&&pk.ui.catSeniors)||"Seniors";
+}
+function applyStatic(){
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));
+  document.querySelectorAll("[data-ia]").forEach(e=>e.setAttribute("aria-label",t(e.dataset.ia)));
+  document.querySelectorAll("[data-ih]").forEach(e=>e.innerHTML=t(e.dataset.ih));
+  [...$("#duree").options].forEach(o=>o.textContent=t("min",{n:o.value}));
+  $("#lang").setAttribute("aria-label",t("langLabel"));
+}
+function refreshAll(){
+  const keep={theme:$("#theme").value,cat:$("#cat").value,nbj:$("#nbj").value};
+  applyStatic(); fill();
+  for(const k in keep) $("#"+k).value=keep[k];
+  refreshThemes();
+  if(STATE&&STATE.sessions) render();
+  $("#lib").innerHTML=""; $("#philo").innerHTML=""; $("#tips").innerHTML="";
+  route();
+}
+const PACKS={};
+async function setLang(code){
+  if(!LANGS.some(l=>l[0]===code)) code="fr";
+  let pk={};
+  if(code!=="fr"){
+    try{ pk=PACKS[code]||(PACKS[code]=await (await fetch(`lang/${code}.json`)).json()); }
+    catch(e){ console.warn("Langue indisponible",code,e); code="fr"; pk={}; }
+  }
+  LANG=code; applyPack(pk);
+  document.documentElement.lang=code; document.documentElement.dir=code==="ar"?"rtl":"ltr";
+  $("#lang").value=code;
+  try{localStorage.setItem(LANG_KEY,code);}catch(e){}
+  refreshAll();
+}
+function initialLang(){
+  try{const s=localStorage.getItem(LANG_KEY); if(s) return s;}catch(e){}
+  const n=(navigator.languages||[navigator.language||"fr"]);
+  for(const l of n){ if(/^pt-BR/i.test(l)) return "pt-BR"; const b=l.slice(0,2).toLowerCase(); if(LANGS.some(x=>x[0]===b)) return b; }
+  return "fr";
 }
 
 /* ---------- Navigation ---------- */
@@ -1522,7 +1585,7 @@ function refreshThemes(){
   const c=+$("#cat").value; const sel=$("#theme");
   [...sel.options].forEach(o=>{
     const ok=EX.some(e=>e.theme===o.value&&(e.phase==="tech"||e.phase==="situation")&&okCat(e,c));
-    o.disabled=!ok; o.textContent=THEMES[o.value]+(ok?"":" (pas pour cette catégorie)");
+    o.disabled=!ok; o.textContent=THEMES[o.value]+(ok?"":t("notForCat"));
   });
   if(sel.selectedOptions[0]&&sel.selectedOptions[0].disabled){const f=[...sel.options].find(o=>!o.disabled); if(f) sel.value=f.value;}
 }
@@ -1530,7 +1593,12 @@ $("#cat").addEventListener("change",refreshThemes);
 refreshThemes();
 $("#go").onclick=()=>generate(true);
 window.addEventListener("hashchange",route);
+FR=snapshot();
+$("#lang").innerHTML=LANGS.map(([c,n])=>`<option value="${c}">${n}</option>`).join("");
+$("#lang").addEventListener("change",e=>setLang(e.target.value));
+applyStatic();
 route(); generate(false);
+const L0=initialLang(); if(L0!=="fr") setLang(L0); else $("#lang").value="fr";
 </script>
 </body>
 </html>
