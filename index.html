@@ -76,6 +76,18 @@ button{font:inherit;cursor:pointer}
 .ex h4{margin:10px 0 2px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
 .ex ul{margin:2px 0;padding-left:20px}
 .ex li{margin:2px 0}
+.vx{margin-top:10px}
+.vxi{border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin:6px 0;background:var(--bg,transparent)}
+.vxi summary{cursor:pointer;font-weight:600;font-size:15px}
+.vxi p{margin:6px 0}.vxi em{color:var(--muted);font-style:normal;font-size:13px}
+.vxi .board{margin-top:6px;max-width:360px}
+.vxk{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:10px;color:#fff;background:#666;margin-right:4px}
+.vxk.facile{background:#2e8b57}.vxk.difficile{background:#c0392b}.vxk.effectif{background:#2a6fb0}
+.vxb{color:var(--blue);font-size:12px}
+.vxreco{border:2px solid var(--accent);border-radius:10px;padding:8px 10px;margin:10px 0}
+.vxreco h4{margin-top:0;color:var(--accent)}.vxwhy{margin:2px 0 4px;font-size:14px}
+.vxreco .vxi{border:none;padding:0}
+@media print{.vxi:not([open]){display:none}}
 .adapt{font-size:14px;color:var(--accent);font-weight:600;margin-top:8px}
 .board{display:flex;flex-direction:column;gap:6px}
 .board svg{width:100%;height:auto;border-radius:10px;display:block;background:#2a5d9f}
@@ -1133,7 +1145,177 @@ function makeBoard(b){
 }
 
 /* ---------- Cartes d'exercice ---------- */
-function exCard(ex, mins, adaptMsg){
+/* ---------- Variantes détaillées (essai : thème « Attaquer une défense 1-5 ») ----------
+   k : facile | difficile | effectif ; jmin : joueurs minimum pour la version « moins de joueurs » ;
+   board : planche animée de la variante (facultative). */
+const VX = {
+a1:[
+ {k:"facile",titre:"Circulation à 3 arrières",texte:"Seulement l'ARG, le DC et l'ARD, sans ailiers. Passes à deux mains, puis à une main quand c'est propre. Pas de passe sautée."},
+ {k:"difficile",titre:"Avec un avancé qui coupe les passes",texte:"Un avancé essaie d'intercepter. Quand il coupe une ligne de passe, on saute le joueur pris et on cherche celui qui est libre.",
+  board:{pl:S(ATT6,"a").concat([["AV","d",10,10.2,"Av"]]).concat(GK),b:"AG",s:[
+   {t:"L'ailier gauche donne à l'ARG. L'avancé se place entre l'ARG et le DC.",m:{ARG:[4.9,9.2],AV:[7.4,10.2]},p:"ARG"},
+   {t:"La passe vers le DC est coupée : l'ARG saute le DC et sert l'ARD.",m:{ARD:[15.1,9.2]},p:"ARD"},
+   {t:"L'avancé court vers l'ARD : l'ARD redonne au DC, laissé libre.",m:{AV:[12.6,10],DC:[10,10.8]},p:"DC"},
+   {t:"Le DC attaque le but dans le dos de l'avancé.",m:{DC:[10,8.8]},p:"BUT"}]}},
+ {k:"effectif",jmin:4,titre:"À 4 : trois arrières et un gardien",texte:"ARG, DC et ARD font circuler. Après chaque passe, le passeur avance d'un pas puis recule. Le dernier receveur tire au signal."}
+],
+a1b:[
+ {k:"facile",titre:"Sans défenseur, sur cibles",texte:"Les deux défenseurs sont remplacés par des plots hauts. On vise les coins du but, tir en appui puis en suspension."},
+ {k:"difficile",titre:"Le n°2 peut sortir : tir de loin ou débordement",texte:"Le n°2 choisit de rester ou de sortir. S'il reste, tir de loin. S'il sort, l'arrière déborde à l'intérieur et tire de près.",
+  board:{pl:[["ARG","a",4.6,10.6,"ARG"],["DC","a",10,12.2,"DC"],["D2","d",6.6,6.2,"2"],["D3","d",10,6.4,"3"]].concat(GK),b:"DC",s:[
+   {t:"Le DC sert l'ARG, qui prend son élan.",m:{ARG:[5.6,9.8]},p:"ARG"},
+   {t:"Le n°2 sort sur lui : le tir de loin est fermé.",m:{D2:[5.8,8.4]}},
+   {t:"L'ARG déborde côté intérieur, dans l'espace laissé par le n°2.",m:{ARG:[7.8,8],D3:[9.4,6.6]}},
+   {t:"Tir de près.",p:"BUT"}]}},
+ {k:"effectif",jmin:4,titre:"À 4 : tireur, passeur, défenseur, gardien",texte:"Un seul tireur à la fois, un passeur fixe, un défenseur sur 6 m. On tourne aux trois postes toutes les 5 tentatives."}
+],
+a2:[
+ {k:"facile",titre:"Sans opposition, distance réduite",texte:"Départ à 11 m au lieu de 13 m. Passe à deux mains, tir en appui uniquement. On travaille d'abord le timing du départ."},
+ {k:"difficile",titre:"Le passeur choisit au dernier moment",texte:"Les trois arrières démarrent ensemble. Le DC feinte d'un côté et sert l'autre : chacun doit être prêt à recevoir. Un défenseur à 7 m sort sur le receveur."},
+ {k:"effectif",jmin:3,titre:"À 3 : passeur, tireur, gardien",texte:"Une seule colonne de tireurs, le passeur change de côté toutes les 5 passes."}
+],
+a2b:[
+ {k:"facile",titre:"Avancé passif, bras levé",texte:"L'avancé reste immobile, bras levé. Le pivot est seul derrière lui : on travaille la passe à rebond et la réception."},
+ {k:"difficile",titre:"Le n°3 colle le pivot",texte:"Le n°3 défend sur le pivot. Le pivot doit se démarquer en feintant d'un côté puis en glissant de l'autre avant de recevoir.",
+  board:{pl:S("ARG DC ARD","a").concat([["PV","a",11.6,7.4,"PV"],["AV","d",10,10,"Av"],["D3","d",9.6,6.4,"3"]]).concat(GK),b:"ARG",s:[
+   {t:"L'ARG donne au DC. L'avancé monte sur lui.",m:{DC:[9.4,11.6],AV:[10.4,10.2]},p:"DC"},
+   {t:"Le n°3 colle le pivot. Le pivot feinte à gauche puis glisse à droite.",m:{PV:[12.8,7.6],D3:[11,6.6]}},
+   {t:"Le DC donne à l'ARD, qui voit le pivot libre.",m:{ARD:[15,9.6]},p:"ARD"},
+   {t:"Passe à rebond au pivot.",m:{PV:[12.6,7]},p:"PV"},
+   {t:"Le pivot se retourne et tire.",p:"BUT"}]}},
+ {k:"effectif",jmin:4,titre:"À 4 : DC, pivot, avancé, gardien",texte:"Le DC fait seul le travail des arrières : il fixe l'avancé en s'engageant, puis passe au pivot."}
+],
+a3:[
+ {k:"facile",titre:"Avancé qui touche seulement",texte:"L'avancé ne peut que toucher le porteur, sans contreur sur 6 m. Le tir se fait en appui."},
+ {k:"difficile",titre:"Le contreur sort : on rejoue avec l'ARG",texte:"Le contreur a le droit de sortir sur l'ARD. L'ARG ne s'arrête pas après sa passe : il continue dans le dos de l'avancé pour recevoir à nouveau.",
+  board:{pl:[["ARG","a",4.6,11,"ARG"],["ARD","a",15.4,11,"ARD"],["PF","p",10,14.2,"P"],["AV","d",10,10,"Av"],["D3","d",10,6.4,"3"]].concat(GK),b:"PF",s:[
+   {t:"L'ARG s'engage vers l'intérieur et reçoit en course.",m:{ARG:[7.3,9.8]},p:"ARG"},
+   {t:"L'avancé monte sur lui : l'ARG décale l'ARD.",m:{AV:[8.3,9.1],ARD:[12.8,9.6]},p:"ARD"},
+   {t:"Le contreur sort sur l'ARD. L'ARG a continué sa course derrière l'avancé.",m:{D3:[12.2,7.8],ARG:[9,7.6]}},
+   {t:"L'ARD redonne à l'ARG, seul face au but.",p:"ARG"},
+   {t:"Tir.",p:"BUT"}]}},
+ {k:"effectif",jmin:4,titre:"À 4 : deux arrières, un avancé, un gardien",texte:"Pas de contreur ni de passeur fixe : l'entraîneur fait la première passe."}
+],
+a3b:[
+ {k:"facile",titre:"N°1 passif",texte:"Le n°1 se contente de lever les bras et de suivre. On travaille le moment de la passe à l'ailier."},
+ {k:"difficile",titre:"Le n°1 sort haut : l'ailier rentre en pivot",texte:"Si le n°1 sort très haut sur l'arrière, l'ailier ne reste pas sur sa ligne : il rentre dans son dos, entre le n°1 et le n°2.",
+  board:{pl:[["AG","a",1.3,3,"AG"],["ARG","a",4.6,10.6,"ARG"],["DC","p",10,12.2,"P"],["D1","d",2.8,2.8,"1"],["D2","d",5.4,5.6,"2"]].concat(GK),b:"DC",s:[
+   {t:"L'ARG reçoit et attaque l'intervalle 1-2.",m:{ARG:[4.6,8]},p:"ARG"},
+   {t:"Le n°1 sort très haut sur l'ARG.",m:{D1:[3.6,6.8]}},
+   {t:"L'ailier rentre dans le dos du n°1, entre le n°1 et le n°2.",m:{AG:[3.9,4.4]}},
+   {t:"Passe à l'ailier devenu pivot.",p:"AG"},
+   {t:"Tir.",p:"BUT"}]}},
+ {k:"effectif",jmin:5,titre:"À 5 : ARG, AG, n°1, n°2, gardien",texte:"L'entraîneur fait la passe à la place du DC. On change de côté toutes les 6 attaques."}
+],
+a4:[
+ {k:"facile",titre:"L'avancé suit toujours le DC",texte:"Choix imposé : l'avancé suit le DC à chaque fois. L'arrière sait que le centre va se vider et l'attaque sans hésiter."},
+ {k:"difficile",titre:"L'avancé reste : on trouve le DC",texte:"L'avancé choisit librement. S'il ne suit pas le DC, on renverse vers l'autre arrière qui sert le DC, libre en deuxième pivot.",
+  board:{pl:S("ARG DC ARD PV","a").concat([["AV","d",10,10,"Av"],["D2","d",7.2,6.1,"2"],["D4","d",12.8,6.1,"4"]]).concat(GK),b:"DC",s:[
+   {t:"Le DC passe à l'ARG et démarre.",m:{ARG:[5,9.6],DC:[11.4,10.1]},p:"ARG"},
+   {t:"L'avancé ne suit pas le DC : il reste face à l'ARG.",m:{AV:[7.4,9.6],DC:[12.3,7.6],PV:[9.4,7.1]}},
+   {t:"L'ARG renverse vers l'ARD.",m:{ARD:[14.6,9.8]},p:"ARD"},
+   {t:"L'ARD sert le DC, libre entre le n°4 et le pivot.",p:"DC"},
+   {t:"Tir du DC.",p:"BUT"}]}},
+ {k:"effectif",jmin:6,titre:"À 6 : trois arrières contre l'avancé et un défenseur",texte:"Sans pivot ni ailiers. Le DC rentre seul en deuxième pivot."}
+],
+a5:[
+ {k:"facile",titre:"Croisé annoncé, défense passive",texte:"Le DC annonce « croisé ! ». La défense suit les déplacements sans prendre la balle : on travaille le timing."},
+ {k:"difficile",titre:"Le n°2 sort vite : décalage à l'aile",texte:"Le n°2 sort tout de suite sur le DC. Le n°1 vient aider : l'ailier gauche se retrouve libre.",
+  board:{pl:S(ATT6,"a").concat(S(DEF15,"d")).concat(GK),b:"DC",s:[
+   {t:"Le DC donne à l'ARG.",m:{ARG:[5,9.6]},p:"ARG"},
+   {t:"L'ARG attire l'avancé, le DC croise dans son dos.",m:{ARG:[8.2,9.4],DC:[6.4,10.4],AV:[9,9.2],PV:[12.4,7.3]}},
+   {t:"Passe au DC. Le n°2 sort vite sur lui.",m:{D2:[6,8.4]},p:"DC"},
+   {t:"Le n°1 vient aider : l'ailier gauche est libre.",m:{D1:[3.8,5.4],AG:[1.6,4]}},
+   {t:"Décalage à l'ailier.",p:"AG"},
+   {t:"Tir de l'aile.",m:{AG:[2.4,4.4]},p:"BUT"}]}},
+ {k:"effectif",jmin:8,titre:"À 8 : 4 contre 3 côté gauche",texte:"ARG, DC, AG et pivot contre l'avancé, le n°1 et le n°2, avec un gardien."}
+],
+a5b:[
+ {k:"facile",titre:"Deux arrières, sorties au signal",texte:"Seulement l'ARG et le DC. Les défenseurs sortent au signal de l'entraîneur : on repère qui sort en retard."},
+ {k:"difficile",titre:"6 contre 6, tir seulement dans le premier trou",texte:"Avec ailiers et pivot. Le tir n'est autorisé que dans le premier intervalle qui s'ouvre : il faut le voir tout de suite."},
+ {k:"effectif",jmin:6,titre:"À 6 : trois arrières contre deux défenseurs",texte:"Sans pivot, un gardien. Les défenseurs couvrent la largeur à deux : les trous s'ouvrent vite."}
+],
+a6:[
+ {k:"facile",titre:"Renversement par le DC",texte:"Pas de passe sautée : la balle passe par le DC, à deux mains. La défense glisse lentement."},
+ {k:"difficile",titre:"Le n°1 ferme l'aile : on trouve le pivot",texte:"Si le n°1 reste collé à l'ailier, l'intervalle 2-3 s'ouvre. Le pivot glisse dedans.",
+  board:{pl:S(ATT6,"a").concat(S(DEF15,"d")).concat(GK),b:"ARD",s:[
+   {t:"L'ARD renverse vers l'ARG. La défense glisse en retard.",m:{ARG:[5,9.6],AV:[8.6,9.6],D3:[8.6,6.3]},p:"ARG"},
+   {t:"L'ARG attaque l'intervalle 1-2. Le n°1 reste collé à l'ailier.",m:{ARG:[5,8],D2:[5.4,7],D1:[2.4,3.8]}},
+   {t:"Le pivot glisse dans l'intervalle 2-3, laissé ouvert.",m:{PV:[7.2,7.4]}},
+   {t:"Passe au pivot.",p:"PV"},
+   {t:"Le pivot se retourne et tire.",p:"BUT"}]}},
+ {k:"effectif",jmin:7,titre:"À 7 : 3 contre 3 sur un côté",texte:"ARG, AG et pivot contre le n°1, le n°2 et le n°3, avec un gardien. L'entraîneur fait le renversement."}
+],
+a6b:[
+ {k:"facile",titre:"Choix défensif annoncé",texte:"Les défenseurs lèvent la main pour montrer qui va sortir. L'arrière et le pivot ont le temps de lire."},
+ {k:"difficile",titre:"Bloc sur l'avancé, puis le pivot roule",texte:"Le pivot bloque l'avancé. Le n°3 sort sur l'arrière : le pivot roule dans son dos.",
+  board:{pl:[["DC","a",9.6,12.4,"DC"],["PV","a",11.4,7.6,"PV"],["PF","p",4.6,11.2,"P"],["AV","d",10,10,"Av"],["D3","d",10.4,6.4,"3"]].concat(GK),b:"PF",s:[
+   {t:"Le passeur sert le DC. Le pivot monte bloquer l'avancé.",m:{PV:[10.8,9.1]},p:"DC"},
+   {t:"Le DC part du côté du bloc. Le n°3 sort sur lui.",m:{DC:[12.2,10.4],D3:[12.2,8.2]}},
+   {t:"Le pivot roule vers le but dans le dos du n°3.",m:{PV:[10.6,7.2]}},
+   {t:"Passe au pivot.",p:"PV"},
+   {t:"Tir.",p:"BUT"}]}},
+ {k:"effectif",jmin:5,titre:"À 5 : sans passeur fixe",texte:"L'entraîneur fait la première passe. Arrière et pivot contre le n°3 et l'avancé, avec un gardien."}
+],
+a7:[
+ {k:"facile",titre:"Défense passive, ailier qui annonce",texte:"L'ailier crie « je rentre » avant de partir. La défense ne fait que suivre : on travaille la position du bloc."},
+ {k:"difficile",titre:"La défense échange : le pivot se libère",texte:"Le n°4 se dégage du bloc et sort sur l'ARD, le n°3 aide sur l'ailier. Le pivot de base, au centre, se retrouve libre.",
+  board:{pl:S(ATT6,"a",{PV:[12.6,7.2]}).concat(S(DEF15,"d")).concat(GK),b:"ARG",s:[
+   {t:"L'ARG donne au DC. L'ailier droit démarre à l'intérieur.",m:{AD:[16.4,6.4]},p:"DC"},
+   {t:"Le DC donne à l'ARD. L'ailier bloque le n°4.",m:{AD:[14.7,7.3],ARD:[15.6,9.6]},p:"ARD"},
+   {t:"Le n°4 se dégage et sort sur l'ARD. Le n°3 aide sur l'ailier, le pivot se décale au centre.",m:{D4:[15.4,8.3],D3:[12.4,6.6],PV:[10.6,7.4]}},
+   {t:"L'ARD sert le pivot, libre au centre.",p:"PV"},
+   {t:"Tir du pivot.",p:"BUT"}]}},
+ {k:"effectif",jmin:9,titre:"À 9 : côté droit seulement",texte:"DC, ARD, AD et pivot contre l'avancé, le n°3, le n°4 et le n°5, avec un gardien."}
+],
+a8:[
+ {k:"facile",titre:"Avancé limité aux 9 m",texte:"L'avancé ne peut pas monter au-delà de la ligne des 9 m : l'espace dans son dos est plus facile à trouver."},
+ {k:"difficile",titre:"Attaque puis repli",texte:"Après chaque attaque, l'équipe qui attaquait se replie en 1-5 contre une contre-attaque immédiate de l'autre équipe."},
+ {k:"effectif",jmin:8,titre:"4 contre 4 sur demi-terrain",texte:"Trois arrières et un pivot contre l'avancé et trois défenseurs de 6 m."}
+],
+a9:[
+ {k:"facile",titre:"Le tir de loin compte double dès 8 m",texte:"Pour les plus jeunes, la ligne du tir de loin est avancée à 8 m. La défense joue sans contreur."},
+ {k:"difficile",titre:"Tir de loin en moins de 3 passes",texte:"Le but de loin ne compte double que s'il est marqué en moins de 3 passes : il faut attaquer vite la ligne de 5."},
+ {k:"effectif",jmin:8,titre:"5 contre 5 sans ailiers",texte:"Trois arrières et un pivot contre une défense 1-4, avec deux gardiens qui tournent."}
+]
+};
+
+let VXA=VX;
+const VXK={facile:"vxEasy",difficile:"vxHard",effectif:"vxSmall"};
+function pickVx(ex,c,nbj){
+  const v=VXA[ex.id]; if(!v||c===undefined) return null;
+  const f=k=>v.findIndex(x=>x.k===k);
+  if(nbj&&nbj<ex.joueurs){const i=v.findIndex(x=>x.k==="effectif"&&(!x.jmin||nbj>=x.jmin)); if(i>=0) return {i,why:t("vxWhySmall",{n:nbj})};}
+  if(c<=ex.min&&f("facile")>=0) return {i:f("facile"),why:t("vxWhyEasy",{c:CATS[c]})};
+  if(c>=5&&f("difficile")>=0) return {i:f("difficile"),why:t("vxWhyHard",{c:CATS[c]})};
+  return null;
+}
+function vxBlock(ex,reco){
+  const v=VXA[ex.id]; if(!v||!v.length) return null;
+  const wrap=document.createElement("div"); wrap.className="vx";
+  const item=(x,i,open)=>{
+    const d=document.createElement("details"); d.className="vxi"+(open?" reco":""); if(open) d.open=true;
+    const extra=x.k==="effectif"&&x.jmin?` · ${t("vxMinPl",{n:x.jmin})}`:"";
+    d.innerHTML=`<summary><span class="vxk ${x.k}">${t(VXK[x.k])}</span> ${x.titre}${x.board?' <span class="vxb" title="'+t("vxHasBoard")+'">▶</span>':""}</summary><p>${x.texte}${extra?`<em>${extra}</em>`:""}</p>`;
+    let built=false;
+    const build=()=>{if(built||!x.board) return; built=true; d.appendChild(makeBoard(x.board));};
+    if(open) build(); else d.addEventListener("toggle",()=>{if(d.open) build();});
+    return d;
+  };
+  if(reco){
+    const box=document.createElement("div"); box.className="vxreco";
+    box.innerHTML=`<h4>${t("vxReco")}</h4><p class="vxwhy">${reco.why}</p>`;
+    box.appendChild(item(v[reco.i],reco.i,true)); wrap.appendChild(box);
+  }
+  const others=v.map((x,i)=>i).filter(i=>!reco||i!==reco.i);
+  if(others.length){
+    const h=document.createElement("h4"); h.textContent=t(reco?"vxOthers":"vxTitle"); wrap.appendChild(h);
+    others.forEach(i=>wrap.appendChild(item(v[i],i,false)));
+  }
+  return wrap;
+}
+
+function exCard(ex, mins, adaptMsg, c, nbj){
   const ph=PHASES[ex.phase];
   const card=document.createElement("article"); card.className="ex"+(ex.board?"":" noboard");
   card.style.setProperty("--phase",ph.c);
@@ -1148,7 +1330,10 @@ function exCard(ex, mins, adaptMsg){
     <h4>${t("orga")}</h4>${list(ex.orga)}
     <h4>${t("consignes")}</h4>${list(ex.consignes)}
     ${ex.variantes&&ex.variantes.length?`<h4>${t("variantes")}</h4>`+list(ex.variantes):""}
-    ${adaptMsg?`<p class="adapt">${adaptMsg}</p>`:""}`;
+    `;
+  const reco=pickVx(ex,c,nbj);
+  const vb=vxBlock(ex,reco); if(vb) txt.appendChild(vb);
+  if(adaptMsg&&!(reco&&VXA[ex.id][reco.i].k==="effectif")){const a=document.createElement("p");a.className="adapt";a.innerHTML=adaptMsg;txt.appendChild(a);}
   card.appendChild(txt);
   if(ex.board) card.appendChild(makeBoard(ex.board));
   return card;
@@ -1291,7 +1476,7 @@ function render(){
     items.forEach(it=>{const sp=document.createElement("span");sp.style.width=(it.min/T*100)+"%";sp.style.background=PHASES[it.ex.phase].c;sp.title=it.ex.titre;tl.appendChild(sp);});
     out.appendChild(tl);
     items.forEach((it,ii)=>{
-      const card=exCard(it.ex,it.min,adaptFor(it.ex,nbj));
+      const card=exCard(it.ex,it.min,adaptFor(it.ex,nbj),c,nbj);
       const alts=alternatives(it,items,theme,c);
       const b=document.createElement("button"); b.type="button"; b.className="swap";
       b.textContent=alts.length?t(alts.length>1?"swapN":"swap1",{n:alts.length}):t("swapNone");
@@ -1501,7 +1686,7 @@ function renderTips(){
 }
 
 /* ---------- Langues ---------- */
-const UI_FR = {"langLabel": "Langue", "subtitle": "Prépare ta séance d'entraînement en 30 secondes, avec les planches tactiques", "navAria": "Sections", "navSeance": "Préparer une séance", "navLib": "Bibliothèque d'exercices", "navPhilo": "Philosophie de jeu", "navTips": "Le coin de l'entraîneur", "navAbout": "À propos", "lblTheme": "Thème", "lblCat": "Catégorie", "lblDuree": "Durée", "lblNbj": "Joueurs présents", "lblNbs": "Nombre de séances", "optS1": "1 séance", "optS2": "Cycle de 2 séances", "optS3": "Cycle de 3 séances", "btnGo": "Générer la séance", "filterThemeAria": "Filtrer par thème", "filterTipsAria": "Filtrer les fiches", "tipsTitle": "Le coin de l'entraîneur", "tipsIntro": "Des idées de fond sur la motivation, la formation des jeunes, les principes de jeu et la santé des joueurs. Chaque fiche se termine par du concret pour ta prochaine séance.", "aboutHtml": "<h2>À propos de ce prototype</h2>\n      <p>Séances Hand aide les entraîneurs à préparer leurs séances. Tu choisis un thème, une catégorie, une durée et le nombre de joueurs présents. Le site assemble alors une séance progressive : échauffement, exercices, situation de jeu et retour au calme.</p>\n      <p>Chaque exercice a sa planche tactique animée. Appuie sur ▶ pour voir les déplacements étape par étape.</p>\n      <h3>Lire les planches</h3>\n      <ul>\n        <li>Ronds bleus : attaquants (AG, ARG, DC, ARD, AD, PV).</li>\n        <li>Carrés orange : défenseurs, numérotés de l'extérieur gauche vers la droite (Av = avancé).</li>\n        <li>Rond vert : gardien. Rond gris : passeur fixe.</li>\n        <li>Trait plein : déplacement d'un joueur. Pointillés jaunes : passe ou tir.</li>\n      </ul>\n      <h3>Contenu</h3>\n      <p>C'est un contenu de démonstration. Les exercices sont rédigés à partir des principes de la formation fédérale et de documents techniques, puis réécrits et redessinés. Avant la mise en ligne publique, chaque fiche sera relue par un entraîneur.</p>", "boardFull": "Planche tactique, terrain entier", "boardHalf": "Planche tactique, demi-terrain", "midline": "ligne médiane", "capStart0": "Placement de départ des joueurs.", "capStart": "<strong>Départ.</strong> {n} étapes : appuie sur ▶ pour lancer.", "capStep": "Étape {i}/{n}.", "pause": "❚❚ Pause", "replay": "↺ Rejouer", "play": "▶ Lecture", "prevStep": "Étape précédente", "nextStep": "Étape suivante", "legAtt": "Attaque", "legDef": "Défense", "legGk": "Gardien", "legRun": "Course", "legPass": "Passe / tir", "min": "{n} min", "catRange": "{a} à {b}", "playersMin": "{n} joueurs min.", "objective": "Objectif :", "orga": "Organisation", "consignes": "Consignes", "variantes": "Variantes", "nPlayers": "{n} joueurs", "adaptBig": "Avec {n} joueurs : joue à {k} contre {k} sur un demi-terrain, sans les ailiers.", "adaptSmall": "Avec {n} joueurs : réduis le nombre de groupes et fais tourner plus vite.", "txtIntent": "Ce qu'on cherche :", "txtObjCat": "Objectif {c} :", "txtCues": "Mots clés :", "txtSession": "SÉANCE {n}", "noTheme": "Ce thème n'est pas encore prévu pour les {c}. Essaie « {t} ».", "nSessions": "{n} séances", "oneSession": "1 séance", "again": "🎲 Autre proposition", "copy": "Copier la séance", "print": "Imprimer / PDF", "copied": "Copiée !", "copyFail": "Copie impossible ici.", "youngNote": "<strong>Jeunes joueurs :</strong> utilise des petits buts (2,40 m x 1,70 m) et une zone à 4 ou 5 m. Fais jouer en effectif réduit, avec une relance immédiate du gardien après chaque but.", "coachTip": "Le conseil du coach :", "dot": ".", "readTip": "Lire la fiche", "sessionN": "Séance {n}", "sDiscover": " : découvrir", "sPlay": " : enchaîner et jouer", "sDeepen": " : approfondir", "swap1": "↻ Changer cet exercice ({n} autre)", "swapN": "↻ Changer cet exercice ({n} autres)", "swapNone": "Pas d'autre exercice pour l'instant", "libAll": "Échauffements et fin de séance", "intentTitle": "Ce qu'on cherche", "principles": "Principes de jeu", "objFor": "Objectif pour les {c}", "cuesTitle": "Mots clés à dire aux joueurs", "philoBody": "<p>Les exercices ne servent à rien sans une idée claire du jeu qu'on veut. Voici les grandes idées sur lesquelles reposent les séances du site.</p>\n  <h3>1. Le jeu d'abord</h3>\n  <p>On apprend le handball en jouant. Chaque séance finit par une situation de jeu, et les exercices techniques préparent ce moment. Un exercice doit toujours ressembler à un vrai moment de match : un but, des adversaires, des choix à faire.</p>\n  <h3>2. Attaquer, c'est avancer vers le but</h3>\n  <ul><li>Chercher d'abord le chemin le plus court vers le but.</li><li>Fixer un défenseur pour créer le surnombre ailleurs.</li><li>Jouer vite, mais faire le bon choix : tirer, passer ou garder le ballon.</li></ul>\n  <h3>3. Défendre, c'est récupérer le ballon</h3>\n  <ul><li>On défend pour reprendre le ballon, pas seulement pour empêcher le but.</li><li>On défend en avançant et ensemble, en parlant.</li><li>Chez les jeunes, on privilégie les défenses qui avancent, avant les systèmes alignés sur la zone.</li></ul>\n  <h3>4. Les transitions font gagner les matchs</h3>\n  <p>Le moment où le ballon change de camp est décisif. On relance vite après une récupération, et on se replie tout de suite après une perte de balle.</p>\n  <h3>5. Le gardien fait partie de l'équipe</h3>\n  <p>Il défend avec ses partenaires, les dirige et lance l'attaque. Il s'entraîne avec le groupe, pas à côté.</p>\n  <h3>6. La place de l'entraîneur</h3>\n  <ul><li>Une ou deux consignes à la fois, courtes et précises.</li><li>Poser des questions plutôt que tout expliquer : « Où était l'espace libre ? »</li><li>Faire jouer tout le monde et valoriser les progrès.</li><li>Adapter l'exercice s'il ne fonctionne pas : plus d'espace, moins de défenseurs, une règle en plus.</li></ul>\n  <h3>7. Une progression selon l'âge</h3>\n  <ul>{AGES}</ul>\n  <h3>Les thèmes un par un</h3>\n  <p>Touche un thème pour voir ses principes, les mots clés et les objectifs par âge.</p>", "philoAges": ["jouer, bouger, toucher beaucoup de ballons, découvrir tous les postes et défendre en avançant.", "apprendre à faire des choix, découvrir les rôles et les défenses étagées, puis les systèmes.", "maîtriser les systèmes, s'adapter à l'adversaire et gagner en efficacité."], "philoNote": "Ce texte présente des principes généraux de la formation en handball, rédigés pour ce site. Il doit être relu et complété par un entraîneur.", "keywords": "Mots clés :", "allTips": "Toutes les fiches", "inPractice": "En pratique", "rewritten": "Texte réécrit pour Séances Hand.", "notForCat": " (pas pour cette catégorie)"};
+const UI_FR = {"langLabel": "Langue", "subtitle": "Prépare ta séance d'entraînement en 30 secondes, avec les planches tactiques", "navAria": "Sections", "navSeance": "Préparer une séance", "navLib": "Bibliothèque d'exercices", "navPhilo": "Philosophie de jeu", "navTips": "Le coin de l'entraîneur", "navAbout": "À propos", "lblTheme": "Thème", "lblCat": "Catégorie", "lblDuree": "Durée", "lblNbj": "Joueurs présents", "lblNbs": "Nombre de séances", "optS1": "1 séance", "optS2": "Cycle de 2 séances", "optS3": "Cycle de 3 séances", "btnGo": "Générer la séance", "filterThemeAria": "Filtrer par thème", "filterTipsAria": "Filtrer les fiches", "tipsTitle": "Le coin de l'entraîneur", "tipsIntro": "Des idées de fond sur la motivation, la formation des jeunes, les principes de jeu et la santé des joueurs. Chaque fiche se termine par du concret pour ta prochaine séance.", "aboutHtml": "<h2>À propos de ce prototype</h2>\n      <p>Séances Hand aide les entraîneurs à préparer leurs séances. Tu choisis un thème, une catégorie, une durée et le nombre de joueurs présents. Le site assemble alors une séance progressive : échauffement, exercices, situation de jeu et retour au calme.</p>\n      <p>Chaque exercice a sa planche tactique animée. Appuie sur ▶ pour voir les déplacements étape par étape.</p>\n      <h3>Lire les planches</h3>\n      <ul>\n        <li>Ronds bleus : attaquants (AG, ARG, DC, ARD, AD, PV).</li>\n        <li>Carrés orange : défenseurs, numérotés de l'extérieur gauche vers la droite (Av = avancé).</li>\n        <li>Rond vert : gardien. Rond gris : passeur fixe.</li>\n        <li>Trait plein : déplacement d'un joueur. Pointillés jaunes : passe ou tir.</li>\n      </ul>\n      <h3>Contenu</h3>\n      <p>C'est un contenu de démonstration. Les exercices sont rédigés à partir des principes de la formation fédérale et de documents techniques, puis réécrits et redessinés. Avant la mise en ligne publique, chaque fiche sera relue par un entraîneur.</p>", "boardFull": "Planche tactique, terrain entier", "boardHalf": "Planche tactique, demi-terrain", "midline": "ligne médiane", "capStart0": "Placement de départ des joueurs.", "capStart": "<strong>Départ.</strong> {n} étapes : appuie sur ▶ pour lancer.", "capStep": "Étape {i}/{n}.", "pause": "❚❚ Pause", "replay": "↺ Rejouer", "play": "▶ Lecture", "prevStep": "Étape précédente", "nextStep": "Étape suivante", "legAtt": "Attaque", "legDef": "Défense", "legGk": "Gardien", "legRun": "Course", "legPass": "Passe / tir", "min": "{n} min", "catRange": "{a} à {b}", "playersMin": "{n} joueurs min.", "objective": "Objectif :", "orga": "Organisation", "consignes": "Consignes", "variantes": "Variantes", "nPlayers": "{n} joueurs", "adaptBig": "Avec {n} joueurs : joue à {k} contre {k} sur un demi-terrain, sans les ailiers.", "adaptSmall": "Avec {n} joueurs : réduis le nombre de groupes et fais tourner plus vite.", "txtIntent": "Ce qu'on cherche :", "txtObjCat": "Objectif {c} :", "txtCues": "Mots clés :", "txtSession": "SÉANCE {n}", "noTheme": "Ce thème n'est pas encore prévu pour les {c}. Essaie « {t} ».", "nSessions": "{n} séances", "oneSession": "1 séance", "again": "🎲 Autre proposition", "copy": "Copier la séance", "print": "Imprimer / PDF", "copied": "Copiée !", "copyFail": "Copie impossible ici.", "youngNote": "<strong>Jeunes joueurs :</strong> utilise des petits buts (2,40 m x 1,70 m) et une zone à 4 ou 5 m. Fais jouer en effectif réduit, avec une relance immédiate du gardien après chaque but.", "coachTip": "Le conseil du coach :", "dot": ".", "readTip": "Lire la fiche", "sessionN": "Séance {n}", "sDiscover": " : découvrir", "sPlay": " : enchaîner et jouer", "sDeepen": " : approfondir", "swap1": "↻ Changer cet exercice ({n} autre)", "swapN": "↻ Changer cet exercice ({n} autres)", "swapNone": "Pas d'autre exercice pour l'instant", "libAll": "Échauffements et fin de séance", "intentTitle": "Ce qu'on cherche", "principles": "Principes de jeu", "objFor": "Objectif pour les {c}", "cuesTitle": "Mots clés à dire aux joueurs", "philoBody": "<p>Les exercices ne servent à rien sans une idée claire du jeu qu'on veut. Voici les grandes idées sur lesquelles reposent les séances du site.</p>\n  <h3>1. Le jeu d'abord</h3>\n  <p>On apprend le handball en jouant. Chaque séance finit par une situation de jeu, et les exercices techniques préparent ce moment. Un exercice doit toujours ressembler à un vrai moment de match : un but, des adversaires, des choix à faire.</p>\n  <h3>2. Attaquer, c'est avancer vers le but</h3>\n  <ul><li>Chercher d'abord le chemin le plus court vers le but.</li><li>Fixer un défenseur pour créer le surnombre ailleurs.</li><li>Jouer vite, mais faire le bon choix : tirer, passer ou garder le ballon.</li></ul>\n  <h3>3. Défendre, c'est récupérer le ballon</h3>\n  <ul><li>On défend pour reprendre le ballon, pas seulement pour empêcher le but.</li><li>On défend en avançant et ensemble, en parlant.</li><li>Chez les jeunes, on privilégie les défenses qui avancent, avant les systèmes alignés sur la zone.</li></ul>\n  <h3>4. Les transitions font gagner les matchs</h3>\n  <p>Le moment où le ballon change de camp est décisif. On relance vite après une récupération, et on se replie tout de suite après une perte de balle.</p>\n  <h3>5. Le gardien fait partie de l'équipe</h3>\n  <p>Il défend avec ses partenaires, les dirige et lance l'attaque. Il s'entraîne avec le groupe, pas à côté.</p>\n  <h3>6. La place de l'entraîneur</h3>\n  <ul><li>Une ou deux consignes à la fois, courtes et précises.</li><li>Poser des questions plutôt que tout expliquer : « Où était l'espace libre ? »</li><li>Faire jouer tout le monde et valoriser les progrès.</li><li>Adapter l'exercice s'il ne fonctionne pas : plus d'espace, moins de défenseurs, une règle en plus.</li></ul>\n  <h3>7. Une progression selon l'âge</h3>\n  <ul>{AGES}</ul>\n  <h3>Les thèmes un par un</h3>\n  <p>Touche un thème pour voir ses principes, les mots clés et les objectifs par âge.</p>", "philoAges": ["jouer, bouger, toucher beaucoup de ballons, découvrir tous les postes et défendre en avançant.", "apprendre à faire des choix, découvrir les rôles et les défenses étagées, puis les systèmes.", "maîtriser les systèmes, s'adapter à l'adversaire et gagner en efficacité."], "philoNote": "Ce texte présente des principes généraux de la formation en handball, rédigés pour ce site. Il doit être relu et complété par un entraîneur.", "keywords": "Mots clés :", "allTips": "Toutes les fiches", "inPractice": "En pratique", "rewritten": "Texte réécrit pour Séances Hand.", "notForCat": " (pas pour cette catégorie)", "vxTitle": "Variantes détaillées", "vxOthers": "Autres variantes", "vxEasy": "Plus facile", "vxHard": "Plus difficile", "vxSmall": "Moins de joueurs", "vxReco": "Version conseillée pour ta séance", "vxWhyEasy": "Version simplifiée, adaptée aux {c}.", "vxWhyHard": "Version plus exigeante, pour les {c}.", "vxWhySmall": "Tu as {n} joueurs : voici la version à effectif réduit.", "vxMinPl": "dès {n} joueurs", "vxHasBoard": "Avec planche animée"};
 const LANGS=[["fr","Français"],["en","English"],["es","Español"],["de","Deutsch"],["it","Italiano"],["pt","Português (Portugal)"],["pt-BR","Português (Brasil)"],["nl","Nederlands"],["pl","Polski"],["tr","Türkçe"],["ja","日本語"],["ko","한국어"],["zh","中文"],["ar","العربية"]];
 const LANG_KEY="seances-hand-langue";
 let LANG="fr", UI=UI_FR, POSL={};
@@ -1530,7 +1715,7 @@ function applyPack(pk){
     if(f.steps) e.board.s.forEach((s,i)=>s.t=g(p.steps,i,f.steps[i]));});
   for(const k in FR.philo){const f=FR.philo[k],p=(pk.philo||{})[k]||{}; for(const x in f) PHILO[k][x]=g(p,x,f[x]);}
   TIPS.forEach(x=>{const f=FR.tips[x.id],p=(pk.tips||{})[x.id]||{}; for(const k in f) x[k]=g(p,k,f[k]);});
-  UI=pk.ui||UI_FR; POSL=pk.pos||{}; CATS[5]=(pk.ui&&pk.ui.catSeniors)||"Seniors";
+  VXA=pk.vx||(LANG==="fr"?VX:{}); UI=pk.ui||UI_FR; POSL=pk.pos||{}; CATS[5]=(pk.ui&&pk.ui.catSeniors)||"Seniors";
 }
 function applyStatic(){
   document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));
